@@ -27,11 +27,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>cz.kbc.adform.masterdata.extractor.Runner</mainClass>
-                    <arguments>
-                        <argument>foo</argument>
-                        <argument>bar</argument>
-                    </arguments>
+                    <mainClass>keboola.adform.masterdata_extractor.Runner</mainClass>                  
                 </configuration>
             </plugin>
         </plugins>
