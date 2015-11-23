@@ -85,19 +85,24 @@ public class Runner {
         //download files in specified interval
         Calendar c = Calendar.getInstance();
         Date startInterval = null;
+        if (config.getParams().getDate_to() != null) {
+            c.setTime(config.getParams().getDate_to());
+            c.add(Calendar.DATE, -config.getParams().getDaysInterval());
+            startInterval = c.getTime();
+
+        } else {
+            c.add(Calendar.DATE, -config.getParams().getDaysInterval());
+            startInterval = c.getTime();
+
+        }
         int i = 0;
         try {
             for (String prefix : config.getParams().getPrefixes()) {
                 //get sublist of files in given interval and for given prefix
                 List<MasterFile> filesSince = null;
                 if (config.getParams().getDate_to() != null) {
-                    c.setTime(config.getParams().getDate_to());
-                    c.add(Calendar.DATE, -config.getParams().getDaysInterval());
-                    startInterval = c.getTime();
                     filesSince = fileList.getFilesSince(startInterval, config.getParams().getDate_to(), prefix);
                 } else {
-                    c.add(Calendar.DATE, -config.getParams().getDaysInterval());
-                    startInterval = c.getTime();
                     filesSince = fileList.getFilesSince(startInterval, prefix);
                 }
                 if (filesSince == null) {

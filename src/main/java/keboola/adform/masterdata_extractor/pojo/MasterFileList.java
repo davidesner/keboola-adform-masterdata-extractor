@@ -44,7 +44,7 @@ public class MasterFileList {
         }
 
         try {
-            return getSublistByPrefix(filePrefix, files.subList(0, -(startIndex)));
+            return getSublistByPrefix(filePrefix, files.subList(0, startIndex));
 
         } catch (Exception ex) {
 
@@ -54,7 +54,9 @@ public class MasterFileList {
 
     /**
      * Returns sublist of files created in range: <date_from,date_to)
-     * @param date_fro
+     * @param date
+     *
+     * _fro
      *
      * m
      * @param date_to
