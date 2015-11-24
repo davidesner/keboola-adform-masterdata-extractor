@@ -24,7 +24,7 @@ public class KBCParameters {
     private Date date_to;
     @JsonProperty("user")
     private String user;
-    @JsonProperty("pass")
+    @JsonProperty("#pass")
     private String pass;
     @JsonProperty("mdListUrl")
     private String mdListUrl;
@@ -46,7 +46,7 @@ public class KBCParameters {
     }
 
     @JsonCreator
-    public KBCParameters(@JsonProperty("user") String user, @JsonProperty("pass") String pass,
+    public KBCParameters(@JsonProperty("user") String user, @JsonProperty("#pass") String pass,
             @JsonProperty("mdListUrl") String mdListUrl, @JsonProperty("daysInterval") int daysInterval,
             @JsonProperty("dateTo") String dateTo, @JsonProperty("bucket") String bucket,
             @JsonProperty("prefixes") ArrayList<String> prefixes, @JsonProperty("metaFiles") ArrayList<String> metaFiles) throws ParseException {
