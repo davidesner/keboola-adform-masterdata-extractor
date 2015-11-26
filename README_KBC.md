@@ -6,7 +6,7 @@ AdForm masterdata service provides data dumps usually at hourly intervals. This 
 
 Configuration takes folowing parameters:
 * **user** - (REQUIRED) user name (login) of your AdForm MasterData service account
-* **pass** - (REQUIRED) password of your AdForm MasterData service account
+* **#pass** - (REQUIRED) password of your AdForm MasterData service account
 * **mdListUrl** - (REQUIRED) your MasterData list url. i.e. *http://masterdata.adform.com:8652/list/XXX*, where the *XXX* is your MasterData ID.
 * **dateTo** - (OPT) time until which you want to retrieve the data, i.e. the upper boundary of the time interval you want to retrieve - data before this time (excluded) will be retrieved. 
 The time has to be specified in the following format: *05-10-2015 21:00*. If not specified data until *NOW* will be retrieved.
@@ -23,7 +23,7 @@ The configuration parameters would look like this:
 ```json
 {
       "user": "AdForm-login",
-      "pass": "password",
+      "#pass": "password",
       "mdListUrl" : "http://masterdata.adform.com:8652/list/XXXX",
       "daysInterval" : 4,
       "dateTo" : "12-10-2015 0:00",
