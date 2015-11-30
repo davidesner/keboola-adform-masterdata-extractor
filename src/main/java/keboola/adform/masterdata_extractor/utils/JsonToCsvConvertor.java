@@ -11,9 +11,12 @@ import com.fasterxml.jackson.databind.MappingJsonFactory;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -59,16 +62,17 @@ public class JsonToCsvConvertor {
         CSVWriter writer = null;
         FileInputStream fis = null;
         BufferedReader rd = null;
+        FileOutputStream fos = new FileOutputStream(destPath);
+
         try {
-            writer = new CSVWriter(new FileWriter(destPath), this.SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER);
+            writer = new CSVWriter(new OutputStreamWriter(fos, Charset.forName("UTF-8")), this.SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER);
 
             JsonFactory f = new MappingJsonFactory();
             fis = new FileInputStream(source);
-            rd = new BufferedReader(new InputStreamReader(fis));
+            rd = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
 
             JsonParser jp = f.createParser(rd);
             JsonToken currentToken;
-
 
             boolean firstRun = true;
             currentToken = jp.nextToken();
@@ -77,7 +81,6 @@ public class JsonToCsvConvertor {
                 throw new Exception("\"Error: invalid JSON format in file: \" + source.getName()");
             }
             currentToken = jp.nextToken();
-
 
             List<String> headers = new ArrayList<String>();
             List<String> values = new ArrayList<String>();
@@ -88,7 +91,6 @@ public class JsonToCsvConvertor {
                 // read the record into a tree model,
                 // this moves the parsing position to the end of it
                 JsonNode node = jp.readValueAsTree();
-
 
                 for (Iterator<String> fields = node.fieldNames(); fields.hasNext();) {
 
@@ -124,7 +126,6 @@ public class JsonToCsvConvertor {
             }
 
         }
-
 
     }
 }
