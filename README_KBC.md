@@ -43,7 +43,8 @@ The configuration parameters would look like this:
       "metaFiles" : ["geolocations","campaigns"]
     }
 ```
-![](https://github.com/github/training-kit/blob/master/images/professortocat.png)
+![](https://github.com/davidesner/keboola-adform-masterdata-extractor/blob/master/screens/config.png)
+![](https://github.com/davidesner/keboola-adform-masterdata-extractor/blob/master/screens/PK_Key_setting.png)
 
 
 
