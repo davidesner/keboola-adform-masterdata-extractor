@@ -12,6 +12,8 @@ The first one provides data usually at hourly intervals and in a period of maxim
 
 Metadata section is another kind of data provided by masterdata. It contains metadata i.e. campaign names for the fact tables. It changes less often and all historical data is contained in the newly imported table. Therefore, the import of metadata tables is NOT incremental and overwrites the original table in Storage. The user hence does not need to specify primary keys of metadata tables manually to ensure correct import.
 
+![](https://github.com/davidesner/keboola-adform-masterdata-extractor/blob/master/screens/PK_Key_setting.png)
+
 ## Configuration
 AdForm masterdata service provides data dumps usually at hourly intervals. This application allows you to retrieve tables of your choice within the specified interval.
 
@@ -44,7 +46,6 @@ The configuration parameters would look like this:
     }
 ```
 ![](https://github.com/davidesner/keboola-adform-masterdata-extractor/blob/master/screens/config.png)
-![](https://github.com/davidesner/keboola-adform-masterdata-extractor/blob/master/screens/PK_Key_setting.png)
 
 
 
