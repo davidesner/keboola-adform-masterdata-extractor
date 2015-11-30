@@ -166,9 +166,9 @@ public class Runner {
                         System.err.print(ex1.getMessage());
                         System.exit(1);
                     }
-                    /*Build manifest file*/
+                    /*Build manifest file,not incremental*/
                     String manifest = "destination: " + resFileName + "\n"
-                            + "incremental: true\n"
+                            + "incremental: false\n"
                             + "delimiter: \"\\t\"\n"
                             + "enclosure: \"\"\n"
                             + "escaped_by: \"\\\\\"";
