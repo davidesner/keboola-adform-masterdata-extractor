@@ -119,9 +119,9 @@ public class Runner {
                 CsvFileMerger.mergeFiles(csvFilesPaths, outTablesPath, resFileName + ".csv");
 
                 /*Build manifest file*/
-                String manifest = /*"destination: " + resFileName + "\n"
+                String manifest = "destination: " + resFileName + "\n"
                         + "incremental: true\n"
-                        + */ "delimiter: \"\\t\"\n"
+                        + "delimiter: \"\\t\"\n"
                         + "enclosure: \"\"\n"
                         + "escaped_by: \"\\\\\"";
                 File manifestFile = new File(outTablesPath + File.separator + resFileName + ".csv.manifest");
@@ -167,9 +167,9 @@ public class Runner {
                         System.exit(1);
                     }
                     /*Build manifest file*/
-                    String manifest = /*"destination: " + resFileName + "\n"
-                        + "incremental: true\n"
-                        + */ "delimiter: \"\\t\"\n"
+                    String manifest = "destination: " + resFileName + "\n"
+                            + "incremental: true\n"
+                            + "delimiter: \"\\t\"\n"
                             + "enclosure: \"\"\n"
                             + "escaped_by: \"\\\\\"";
                     File manifestFile = new File(outTablesPath + File.separator + resFileName + ".csv.manifest");
