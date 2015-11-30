@@ -120,7 +120,6 @@ public class Runner {
 
                 /*Build manifest file*/
                 String manifest = "destination: " + resFileName + "\n"
-                        + "primary_key: [\"TransactionId\"]"
                         + "incremental: true\n"
                         + "delimiter: \"\\t\"\n"
                         + "enclosure: \"\"\n"
