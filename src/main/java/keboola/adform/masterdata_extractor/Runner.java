@@ -107,7 +107,7 @@ public class Runner {
                 } else {
                     filesSince = fileList.getFilesSince(startInterval, prefix);
                 }
-                if (filesSince == null) {
+                if (filesSince.isEmpty()) {
                     continue;
                 }
                 System.out.println("Downloading files with prefix: " + prefix);
