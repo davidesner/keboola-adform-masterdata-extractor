@@ -8,7 +8,7 @@ User may specify prefixes of the tables to be extracted. There are two types of 
 
 The first one provides data usually at hourly intervals and in a period of maximum one week. These tables are then imported incrementally to the specified tables in KBC. Prefixes are defined using the **prefixes** config parameter described below.
 
-**IMPORTANT NOTE:**Configuration does not allow to specify the primary keys of imported tables to prevent the mistyping of the primary key column names. Instead, user must set the primary keys manually in the KBC UI within the *STORAGE* section after the first successfull import. See the screenshot below..
+**IMPORTANT NOTE:**Configuration does not allow to specify the primary keys of imported tables to prevent the mistyping of the primary key column names. Instead, user must set the primary keys manually in the KBC UI within the *STORAGE* section after the first successfull import. Otherwise, the incremental import will not work correctly! See the screenshot below..
 
 Metadata section is another kind of data provided by masterdata. It contains metadata i.e. campaign names for the fact tables. It changes less often and all historical data is contained in the newly imported table. Therefore, the import of metadata tables is NOT incremental and overwrites the original table in Storage. The user hence does not need to specify primary keys of metadata tables manually to ensure correct import.
 
