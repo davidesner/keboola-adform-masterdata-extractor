@@ -1,6 +1,16 @@
 # AdForm masterdata extractor for KBC
 Extractor for Keboola Connection allowing automated downloads from AdForm masterdata service.
 
+## Funcionality
+AdForm masterdata service provides data dumps usually at hourly intervals. This application allows you to retrieve tables of your choice within the specified interval.
+
+User may specify prefixes of the tables to be extracted. There are two types of data tables provided by masterdata. 
+
+The first one provides data usually at hourly intervals and in a period of maximum one week. These tables are then imported incrementally to the specified tables in KBC. Prefixes are defined using the **prefixes** config parameter described below.
+**IMPORTANT NOTE:**Configuration does not allow to specify the primary keys of imported tables to prevent the mistyping of the primary key column names. Instead, user must set the primary keys manually in the KBC UI within the *STORAGE* section after the first successfull import. See the screenshot below..
+
+Metadata section is another kind of data tables provided by masterdata. It contains metadata i.e. campaign names for the fact tables. It changes less often and all historical data is contained in the newly imported table. Therefore, the import of metadata tables is NOT incremental and overwrites the original table in Storage. The user hence does not need to specify primary keys of metadata tables manually to ensure correct import.
+
 ## Configuration
 AdForm masterdata service provides data dumps usually at hourly intervals. This application allows you to retrieve tables of your choice within the specified interval.
 
@@ -16,7 +26,7 @@ The time has to be specified in the following format: *05-10-2015 21:00*. If not
 * **metaFiles** - (OPT) the list of metadata tables (prefixes) you want to retrieve. e.g. *[geolocations, campaigns]*
 
 ### Sample configuration
-Lets say we want to retrieve data from tables with prefixes *Impression, Click* and *Tracingpoint* within the interval *[08-10-2015 0:00, 12-10-2015 0:00)*.
+Lets say we want to retrieve data from tables with prefixes *Impression, Click* and *Trackingpoint* within the interval *[08-10-2015 0:00, 12-10-2015 0:00)*.
 We also want to retrieve the metadata tables with prefixes *geolocations* and *campaigns* and we want the results in the bucket *in.c-main*
 
 The configuration parameters would look like this:
@@ -31,4 +41,8 @@ The configuration parameters would look like this:
       "prefixes" : [ "Impression", "Click", "Trackingpoint" ],
       "metaFiles" : ["geolocations","campaigns"]
     }
+```
+![](https://github.com/github/training-kit/blob/master/images/professortocat.png)
+
+
 
