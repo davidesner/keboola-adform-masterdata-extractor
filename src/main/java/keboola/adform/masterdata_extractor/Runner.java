@@ -2,6 +2,7 @@
  */
 package keboola.adform.masterdata_extractor;
 
+import com.google.common.io.Files;
 import keboola.adform.masterdata_extractor.api_client.ClientException;
 import keboola.adform.masterdata_extractor.config.KBCConfig;
 import keboola.adform.masterdata_extractor.config.YamlConfigParser;
@@ -13,6 +14,7 @@ import keboola.adform.masterdata_extractor.pojo.MasterFileList;
 import keboola.adform.masterdata_extractor.utils.JsonToCsvConvertor;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -112,9 +114,24 @@ public class Runner {
                 List<String> csvFilesPaths = ex.downloadAndUnzip(filesSince, dataPath);
 
                 //merge downloaded files
+                String resFileName = config.getParams().getBucket() + "." + prefix.toLowerCase();
                 System.out.println("Merging files with prefix: " + prefix);
-                CsvFileMerger.mergeFiles(csvFilesPaths, outTablesPath, config.getParams().getBucket() + "." + prefix.toLowerCase() + ".csv");
+                CsvFileMerger.mergeFiles(csvFilesPaths, outTablesPath, resFileName + ".csv");
 
+                /*Build manifest file*/
+                String manifest = /*"destination: " + resFileName + "\n"
+                        + "incremental: true\n"
+                        + */ "delimiter: \"\\t\"\n"
+                        + "enclosure: \"\"\n"
+                        + "escaped_by: \"\\\\\"";
+                File manifestFile = new File(outTablesPath + File.separator + resFileName + ".csv.manifest");
+                try {
+                    Files.write(manifest, manifestFile, Charset.forName("UTF-8"));
+                } catch (IOException ex1) {
+                    System.out.println("Error writing manifest file." + ex1.getMessage());
+                    System.err.println(ex1.getMessage());
+                    System.exit(2);
+                }
                 //delete single csv files
                 try {
                     FileHandler.deleteFiles(csvFilesPaths);
@@ -140,14 +157,28 @@ public class Runner {
                 JsonToCsvConvertor conv = new JsonToCsvConvertor();
                 String metaFolder = new File(metaFilesPaths.get(0)).getParent();
                 for (String metaF : config.getParams().getMetaFiles()) {
-
+                    String resFileName = config.getParams().getBucket() + "." + "meta-" + metaF;
                     try {
                         System.out.println("Converting meta file: " + metaF + " to CSV");
-                        conv.convert(metaFolder + File.separator + metaF + ".json", outTablesPath + File.separator + config.getParams().getBucket() + "." + "meta-" + metaF + ".csv");
+                        conv.convert(metaFolder + File.separator + metaF + ".json", outTablesPath + File.separator + resFileName + ".csv");
                     } catch (Exception ex1) {
                         System.out.print("Error converting meta data file to csv.");
                         System.err.print(ex1.getMessage());
                         System.exit(1);
+                    }
+                    /*Build manifest file*/
+                    String manifest = /*"destination: " + resFileName + "\n"
+                        + "incremental: true\n"
+                        + */ "delimiter: \"\\t\"\n"
+                            + "enclosure: \"\"\n"
+                            + "escaped_by: \"\\\\\"";
+                    File manifestFile = new File(outTablesPath + File.separator + resFileName + ".csv.manifest");
+                    try {
+                        Files.write(manifest, manifestFile, Charset.forName("UTF-8"));
+                    } catch (IOException ex1) {
+                        System.out.println("Error writing manifest file." + ex1.getMessage());
+                        System.err.println(ex1.getMessage());
+                        System.exit(2);
                     }
                 }
 
