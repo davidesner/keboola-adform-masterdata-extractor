@@ -60,7 +60,7 @@ public class Runner {
             System.err.println(config.getValidationError());
             System.exit(1);
         }
-
+        boolean dataExtracted = false;
         Extractor ex = new Extractor(config.getParams().getUser(), config.getParams().getPass(), config.getParams().getMdListUrl());
         File dataFolder = new File(dataPath);
         try {
@@ -140,6 +140,7 @@ public class Runner {
                     System.out.println("Error deleting single csv files.");
                 }
                 i++;
+                dataExtracted = true;
             }
 
             /*Download metadata files*/
@@ -181,7 +182,7 @@ public class Runner {
                         System.exit(2);
                     }
                 }
-
+                dataExtracted = true;
                 /*delete original JSON files*/
                 try {
                     FileHandler.deleteFiles(metaFilesPaths);
@@ -189,8 +190,13 @@ public class Runner {
                     System.out.println("Error deleting original meta files. " + ex1.getMessage());
                 }
             }
-
-            System.out.println("Files extracted successfully..");
+            if (dataExtracted && i > 0) {
+                System.out.println("Files extracted successfully..");
+            } else if (!dataExtracted) {
+                System.out.println("Proccess finished successfully but no files were extracted. Check configuration parameters.");
+            } else {
+                System.out.println("Proccess finished successfully but only metadata tables were extracted. Check configuration parameters.");
+            }
             System.exit(0);
         } catch (ExtractorException ex1) {
             Logger.getLogger(Runner.class.getName()).log(Level.SEVERE, null, ex1);
