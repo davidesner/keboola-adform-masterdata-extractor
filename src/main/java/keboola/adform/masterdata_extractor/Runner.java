@@ -113,6 +113,13 @@ public class Runner {
                 System.out.println("Downloading files with prefix: " + prefix);
                 List<String> csvFilesPaths = ex.downloadAndUnzip(filesSince, dataPath);
 
+                /*This should not happen, check anyway*/
+                if (csvFilesPaths.isEmpty()) {
+                    System.out.print("Error downloading files with prefix: " + prefix);
+                    System.err.print("Error downloading files with prefix: " + prefix);
+                    System.exit(2);
+                }
+
                 //merge downloaded files
                 String resFileName = config.getParams().getBucket() + "." + prefix.toLowerCase();
                 System.out.println("Merging files with prefix: " + prefix);

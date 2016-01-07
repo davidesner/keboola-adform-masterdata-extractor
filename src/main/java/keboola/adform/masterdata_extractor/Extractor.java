@@ -51,7 +51,7 @@ public class Extractor {
 
     }
 
-    private List<String> unzip(List<MasterFile> fileList, String folderPath) {
+    private List<String> unzip(List<MasterFile> fileList, String folderPath) throws ExtractorException {
         byte[] buffer = new byte[2048];
         List<String> rawFiles = new ArrayList<String>();
         try {
@@ -64,8 +64,8 @@ public class Extractor {
 
             for (MasterFile file : fileList) {
                 //get the zip file content
-                ZipInputStream zis =
-                        new ZipInputStream(new FileInputStream(folderPath + File.separator + file.getPrefix() + File.separator + file.getName()));
+                ZipInputStream zis
+                        = new ZipInputStream(new FileInputStream(folderPath + File.separator + file.getPrefix() + File.separator + file.getName()));
                 //get the zipped file list entry
                 ZipEntry ze = zis.getNextEntry();
                 File newFile = null;
@@ -73,7 +73,6 @@ public class Extractor {
 
                     String fileName = ze.getName();
                     newFile = new File(folderPath + File.separator + fileName);
-
 
                     //create all non exists folders            
                     new File(newFile.getParent()).mkdirs();
@@ -98,9 +97,8 @@ public class Extractor {
 
             return rawFiles;
 
-
         } catch (IOException ex) {
-            return null;
+            throw new ExtractorException("Failed to unzip downloaded file. " + ex.getMessage());
         }
     }
 
@@ -114,6 +112,7 @@ public class Extractor {
         for (MasterFile file : fileList) {
             int r = 0;
             boolean succ = false;
+            String filePath = folderPath + File.separator + file.getPrefix() + File.separator + file.getName();
             do {
                 /*Wait until next try*/
                 try {
@@ -123,16 +122,24 @@ public class Extractor {
                     Logger.getLogger(Extractor.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 r++;
-                String filePath = folderPath + File.separator + file.getPrefix() + File.separator + file.getName();
+
                 try {
-                    succ = client.downloadFile(file.getAbsolutePath(), filePath);
+                    succ = client.downloadFile(file.getAbsolutePath(), filePath, false);
                 } catch (ClientException ex) {
                     throw new ExtractorException("Failed to download files. " + ex.getMessage());
                 }
             } while (r < RETRIES && !succ);
 
-            if (r == RETRIES) {
-                throw new ExtractorException("Failed to download files.");
+            if (r == RETRIES - 1 || !succ) {
+
+                try {
+                    succ = client.downloadFile(file.getAbsolutePath(), filePath, true);
+                    if (!succ) {
+                        throw new ExtractorException("Failed to download files. " + client.getApiException().getMessage());
+                    }
+                } catch (ClientException ex) {
+                    throw new ExtractorException("Failed to download files. " + ex.getMessage());
+                }
             }
         }
     }

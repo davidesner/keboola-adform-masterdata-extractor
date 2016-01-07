@@ -85,7 +85,6 @@ public class APIClient {
             AUTH_TICKET = resp.getString("Ticket");
             client.close();
 
-
         } catch (IOException ex) {
             Logger.getLogger(Extractor.class
                     .getName()).log(Level.SEVERE, null, ex);
@@ -99,7 +98,6 @@ public class APIClient {
             }
 
             CloseableHttpClient client = HttpClients.createDefault();
-
 
             HttpGet httpGet = new HttpGet(masterDataListUrl + "?render=json&authTicket=" + AUTH_TICKET);
             httpGet.setHeader("Accept", "application/json");
@@ -135,17 +133,36 @@ public class APIClient {
 
     }
 
-    public boolean downloadFile(String fileUrl, String downloadPath) throws ClientException {
+    /**
+     *
+     * @param fileUrl - URL of the file to download
+     * @param downloadPath - path where the file is to be downloaded
+     * @param lastRun - indicates it is a last run and API exception should be
+     * set if fail response code is returned
+     * @return
+     * @throws ClientException
+     */
+    public boolean downloadFile(String fileUrl, String downloadPath, boolean lastRun) throws ClientException {
         try {
             FileOutputStream fos = null;
             CloseableHttpClient client = HttpClients.createDefault();
             HttpGet httpget = new HttpGet(fileUrl + "?authTicket=" + AUTH_TICKET);
+            //disable redirects
+            RequestConfig requestConfig = RequestConfig.custom().setRedirectsEnabled(false).build();
+            httpget.setConfig(requestConfig);
+
             HttpResponse response = client.execute(httpget);
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != 200) {
+                if (lastRun) {
+                    setApiException(new Exception("Failed to retrieve file from url: " + fileUrl + " Server returned response code: " + statusCode));
+                    return false;
+                }
                 if (statusCode == 302) {
                     //invalid ticket
                     authenticate();
+                    return false;
+                } else {
                     return false;
                 }
             }
@@ -169,6 +186,9 @@ public class APIClient {
             setApiException(ex);
             return false;
         } catch (IOException ex) {
+            setApiException(ex);
+            return false;
+        } catch (Exception ex) {
             setApiException(ex);
             return false;
         }
