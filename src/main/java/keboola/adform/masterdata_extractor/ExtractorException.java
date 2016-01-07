@@ -9,7 +9,7 @@ package keboola.adform.masterdata_extractor;
  */
 public class ExtractorException extends Exception {
 
-    int severity;
+    private final int severity;
 
     public ExtractorException(String message) {
         super(message);
