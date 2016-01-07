@@ -209,7 +209,7 @@ public class Runner {
             Logger.getLogger(Runner.class.getName()).log(Level.SEVERE, null, ex1);
             System.out.print("Error extracting data.");
             System.err.print(ex1.getMessage());
-            System.exit(2);
+            System.exit(ex1.getSeverity());
         } catch (MergeException ex1) {
             Logger.getLogger(Runner.class.getName()).log(Level.SEVERE, null, ex1);
             System.out.print("Error merging data.");
