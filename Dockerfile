@@ -1,5 +1,5 @@
 FROM centos:centos7
-MAINTAINER David Esner <esnerd@gmail.com>
+MAINTAINER David Esner <esnerda@gmail.com>
 
 ENV APP_VERSION 1.2.0
 

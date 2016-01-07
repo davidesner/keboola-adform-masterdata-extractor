@@ -99,6 +99,8 @@ public class Extractor {
 
         } catch (IOException ex) {
             throw new ExtractorException("Failed to unzip downloaded file. " + ex.getMessage());
+        } catch (Exception ex) {
+            throw new ExtractorException("Failed to unzip downloaded file. " + ex.getMessage());
         }
     }
 
