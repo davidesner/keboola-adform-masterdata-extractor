@@ -120,8 +120,8 @@ public class Extractor {
                     rawFiles.add(newFile.getAbsolutePath());
                     gis.close();
                 }
-                if (!fileType.equals("gz") || fileType.equals("zip")) {
-                    throw new ExtractorException("Failed to unzip downloaded file. Unsupported archive type.", 1);
+                if (!fileType.equals("gz") && !fileType.equals("zip")) {
+                    throw new ExtractorException("Failed to unzip downloaded file: " + file.getName() + " Unsupported archive type.", 1);
                 }
 
             }
