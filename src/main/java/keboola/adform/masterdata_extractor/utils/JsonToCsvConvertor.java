@@ -11,17 +11,15 @@ import com.fasterxml.jackson.databind.MappingJsonFactory;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Convertor from JSON to CSV files.
@@ -82,8 +80,9 @@ public class JsonToCsvConvertor {
             }
             currentToken = jp.nextToken();
 
-            List<String> headers = new ArrayList<String>();
-            List<String> values = new ArrayList<String>();
+            //retrieve all headers
+            Map<String, String> lineData = getAllHeaders(source);
+
             // For each of the records in the array
             int line = 1;
             while (currentToken != JsonToken.END_ARRAY) {
@@ -95,27 +94,25 @@ public class JsonToCsvConvertor {
                 for (Iterator<String> fields = node.fieldNames(); fields.hasNext();) {
 
                     String field = fields.next();
-                    //write header if firstRun
-                    if (firstRun) {
-                        headers.add(field);
-                    }
-                    values.add(node.get(field).asText());
+                    lineData.put(field, node.get(field).asText());
                 }
 
                 //writer to output file
                 //write header if firstRun
                 if (firstRun) {
-                    writer.writeNext(headers.toArray(new String[0]));
+                    writer.writeNext(lineData.keySet().toArray(new String[0]));
                     firstRun = false;
                 }
-                writer.writeNext(values.toArray(new String[0]));
-                values.clear();
-                headers.clear();
+                writer.writeNext(lineData.values().toArray(new String[0]));
+                //reset the line
+                for (Map.Entry<String, String> entry : lineData.entrySet()) {
+                    entry.setValue(null);
+                }
                 currentToken = jp.nextToken();
             }
 
         } catch (IOException ex) {
-            Logger.getLogger(JsonToCsvConvertor.class.getName()).log(Level.SEVERE, null, ex);
+            throw new Exception("Error writing metadata file: " + source.getName());
         } finally {
             try {
                 writer.close();
@@ -127,5 +124,48 @@ public class JsonToCsvConvertor {
 
         }
 
+    }
+
+    /**
+     * Iterates through whole file to find all possible headers
+     *
+     * @param jsonFile - json file to parse
+     * @return Map of all possible headers as keys and empty values
+     * @throws Exception
+     */
+    private Map<String, String> getAllHeaders(File jsonFile) throws Exception {
+        try {
+            Map<String, String> headers = new LinkedHashMap<String, String>();
+
+            FileInputStream fis = null;
+            BufferedReader rd = null;
+            JsonFactory f = new MappingJsonFactory();
+            fis = new FileInputStream(jsonFile);
+            rd = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
+
+            JsonParser jp = f.createParser(rd);
+            JsonToken currentToken;
+            currentToken = jp.nextToken();
+            currentToken = jp.nextToken();
+
+            while (currentToken != JsonToken.END_ARRAY) {
+
+                JsonNode node = jp.readValueAsTree();
+
+                for (Iterator<String> fields = node.fieldNames(); fields.hasNext();) {
+                    String field = fields.next();
+                    //add header,if not already exist
+                    headers.put(field, null);
+                }
+                currentToken = jp.nextToken();
+            }
+
+            return headers;
+
+        } catch (FileNotFoundException ex) {
+            throw new Exception("Error reading metadata file: " + jsonFile.getName() + " " + ex.getMessage());
+        } catch (IOException ex) {
+            throw new Exception("Error reading metadata file: " + jsonFile.getName() + " " + ex.getMessage());
+        }
     }
 }
