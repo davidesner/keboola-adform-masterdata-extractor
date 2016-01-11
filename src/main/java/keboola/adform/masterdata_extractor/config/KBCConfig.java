@@ -2,6 +2,7 @@
  */
 package keboola.adform.masterdata_extractor.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.Map;
  * @author David Esner <esnerda at gmail.com>
  * @created 2015
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class KBCConfig {
 
     String validationError;
