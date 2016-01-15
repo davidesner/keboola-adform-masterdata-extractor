@@ -34,14 +34,14 @@ public class Extractor {
         this.client = new APIClient(userName, password, masterDataListUrl);
     }
 
-    public List<String> downloadAndUnzip(List<MasterFile> fileList, String folderPath) throws ExtractorException {
+    public List<String> downloadAndUnzip(List<MasterFile> fileList, String folderPath, String outTablePath) throws ExtractorException {
         //download files
 
         downloadFiles(fileList, folderPath);
 
         List<String> rawFilePaths;
         //unzip archives and delete data
-        rawFilePaths = unzip(fileList, folderPath);
+        rawFilePaths = unzip(fileList, folderPath, outTablePath);
         //delete zipFiles
         try {
             FileHandler.deleteFile(folderPath + File.separator + fileList.get(0).getPrefix());
@@ -52,7 +52,7 @@ public class Extractor {
 
     }
 
-    public List<String> unzip(List<MasterFile> fileList, String folderPath) throws ExtractorException {
+    public List<String> unzip(List<MasterFile> fileList, String folderPath, String outPath) throws ExtractorException {
         byte[] buffer = new byte[2048];
         List<String> rawFiles = new ArrayList<String>();
         try {
@@ -80,9 +80,9 @@ public class Extractor {
                     while (ze != null) {
 
                         String fileName = ze.getName();
-                        newFile = new File(folderPath + File.separator + fileName);
+                        newFile = new File(outPath + File.separator + fileName);
 
-                        //create all non exists folders            
+                        //create all non exists folders
                         new File(newFile.getParent()).mkdirs();
 
                         FileOutputStream fos = new FileOutputStream(newFile);
@@ -105,9 +105,9 @@ public class Extractor {
                 if (fileType.equals("gz")) {
                     FileInputStream fis = new FileInputStream(folderPath + File.separator + file.getPrefix() + File.separator + file.getName());
                     GZIPInputStream gis = new GZIPInputStream(fis);
-                    File newFile = new File(folderPath + File.separator + file.getName().substring(0, file.getName().lastIndexOf(".")));
+                    File newFile = new File(outPath + File.separator + file.getName().substring(0, file.getName().lastIndexOf(".")));
 
-                    //create all non exists folders            
+                    //create all non exists folders
                     new File(newFile.getParent()).mkdirs();
 
                     FileOutputStream fos = new FileOutputStream(newFile);

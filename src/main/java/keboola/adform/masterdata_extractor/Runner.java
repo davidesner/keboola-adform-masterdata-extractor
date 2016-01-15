@@ -15,6 +15,8 @@ import keboola.adform.masterdata_extractor.utils.JsonToCsvConvertor;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -111,7 +113,7 @@ public class Runner {
                     continue;
                 }
                 System.out.println("Downloading files with prefix: " + prefix);
-                List<String> csvFilesPaths = ex.downloadAndUnzip(filesSince, dataPath);
+                List<String> csvFilesPaths = ex.downloadAndUnzip(filesSince, dataPath, outTablesPath);
 
                 /*This should not happen, check anyway*/
                 if (csvFilesPaths.isEmpty()) {
@@ -120,31 +122,26 @@ public class Runner {
                     System.exit(2);
                 }
 
-                //merge downloaded files
-                String resFileName = config.getParams().getBucket() + "." + prefix.toLowerCase();
-                System.out.println("Merging files with prefix: " + prefix);
-                CsvFileMerger.mergeFiles(csvFilesPaths, outTablesPath, resFileName + ".csv");
+                for (String filePath : csvFilesPaths) {
+                    Path p = Paths.get(filePath);
+                    String fileName = p.getFileName().toString();
+                    String resFileName = fileName;
 
-                /*Build manifest file*/
-                String manifest = "destination: " + resFileName + "\n"
-                        + "incremental: true\n"
-                        + "delimiter: \"\\t\"\n"
-                        + "enclosure: \"\"\n"
-                        + "escaped_by: \"\\\\\"";
-                File manifestFile = new File(outTablesPath + File.separator + resFileName + ".csv.manifest");
-                try {
-                    Files.write(manifest, manifestFile, Charset.forName("UTF-8"));
-                } catch (IOException ex1) {
-                    System.out.println("Error writing manifest file." + ex1.getMessage());
-                    System.err.println(ex1.getMessage());
-                    System.exit(2);
-                }
-                //delete single csv files
-                try {
-                    FileHandler.deleteFiles(csvFilesPaths);
-                } catch (IOException ex1) {
+                    /*Build manifest file*/
+                    String manifest = "destination: " + config.getParams().getBucket() + "." + prefix.toLowerCase() + "\n"
+                            + "incremental: true\n"
+                            + "delimiter: \"\\t\"\n"
+                            + "enclosure: \"\"\n"
+                            + "escaped_by: \"\\\\\"";
+                    File manifestFile = new File(outTablesPath + File.separator + resFileName + ".manifest");
 
-                    System.out.println("Error deleting single csv files.");
+                    try {
+                        Files.write(manifest, manifestFile, Charset.forName("UTF-8"));
+                    } catch (IOException ex1) {
+                        System.out.println("Error writing manifest file." + ex1.getMessage());
+                        System.err.println(ex1.getMessage());
+                        System.exit(2);
+                    }
                 }
                 i++;
                 dataExtracted = true;
@@ -159,7 +156,7 @@ public class Runner {
             }
             if (config.hasMeta() && metaChanged) {
                 System.out.println("Downloading meta files");
-                List<String> metaFilesPaths = ex.downloadAndUnzip(Arrays.asList(fileList.getMeta()), dataPath);
+                List<String> metaFilesPaths = ex.downloadAndUnzip(Arrays.asList(fileList.getMeta()), dataPath, dataPath);
 
                 /*Convert from JSON to csv*/
                 JsonToCsvConvertor conv = new JsonToCsvConvertor();
@@ -210,11 +207,6 @@ public class Runner {
             System.out.print("Error extracting data.");
             System.err.print(ex1.getMessage());
             System.exit(ex1.getSeverity());
-        } catch (MergeException ex1) {
-            Logger.getLogger(Runner.class.getName()).log(Level.SEVERE, null, ex1);
-            System.out.print("Error merging data.");
-            System.err.print(ex1.getMessage());
-            System.exit(2);
         }
     }
 }
