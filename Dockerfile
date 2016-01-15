@@ -19,7 +19,8 @@ RUN yum -y install apache-maven
 WORKDIR /home
 
 ENV JAVA_HOME /usr/lib/jvm/jre-1.7.0
-RUN git clone https://github.com/davidesner/keboola-adform-masterdata-extractor ./  
+RUN git clone https://github.com/davidesner/keboola-adform-masterdata-extractor ./
+git checkout tags/v1.1.2
 RUN mvn compile
 
-ENTRYPOINT mvn exec:java -Dexec.args=/data  
+ENTRYPOINT mvn exec:java -Dexec.args=/data
