@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -113,6 +114,8 @@ public class Runner {
                     continue;
                 }
                 System.out.println("Downloading files with prefix: " + prefix);
+                //sort from oldest
+                Collections.sort(filesSince, Collections.reverseOrder());
                 List<String> csvFilesPaths = ex.downloadAndUnzip(filesSince, dataPath, outTablesPath);
 
                 /*This should not happen, check anyway*/
