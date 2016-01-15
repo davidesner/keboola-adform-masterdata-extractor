@@ -1,15 +1,9 @@
-FROM centos:centos7
+FROM keboola/base
 MAINTAINER David Esner <esnerda@gmail.com>
 
 ENV APP_VERSION 1.2.0
 
-RUN yum -y update && \
-	yum -y install \
-		epel-release \
-		git \
-		tar \
-		&& \
-	yum clean all
+
 
 
 RUN yum -y install wget
@@ -20,7 +14,7 @@ WORKDIR /home
 
 ENV JAVA_HOME /usr/lib/jvm/jre-1.7.0
 RUN git clone https://github.com/davidesner/keboola-adform-masterdata-extractor ./
-git checkout tags/v1.1.2
+RUN git checkout tags/v1.1.2
 RUN mvn compile
 
 ENTRYPOINT mvn exec:java -Dexec.args=/data
