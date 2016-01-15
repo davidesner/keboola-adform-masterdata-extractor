@@ -62,9 +62,9 @@ public class Extractor {
             if (!folder.exists()) {
                 folder.mkdir();
             }
-
+            int i = 0;
             for (MasterFile file : fileList) {
-
+                i++;
                 // check if for filetype
                 String fileType = file.getName().substring(file.getName().lastIndexOf('.') + 1);
                 fileType = fileType.toLowerCase();
@@ -80,7 +80,7 @@ public class Extractor {
                     while (ze != null) {
 
                         String fileName = ze.getName();
-                        newFile = new File(outPath + File.separator + fileName);
+                        newFile = new File(outPath + File.separator + file.getPrefix() + "_" + i + "_" + fileName);
 
                         //create all non exists folders
                         new File(newFile.getParent()).mkdirs();
@@ -105,7 +105,7 @@ public class Extractor {
                 if (fileType.equals("gz")) {
                     FileInputStream fis = new FileInputStream(folderPath + File.separator + file.getPrefix() + File.separator + file.getName());
                     GZIPInputStream gis = new GZIPInputStream(fis);
-                    File newFile = new File(outPath + File.separator + file.getName().substring(0, file.getName().lastIndexOf(".")));
+                    File newFile = new File(outPath + File.separator + file.getPrefix() + "_" + i + "_" + file.getName().substring(0, file.getName().lastIndexOf(".")));
 
                     //create all non exists folders
                     new File(newFile.getParent()).mkdirs();
