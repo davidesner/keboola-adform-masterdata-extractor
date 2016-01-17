@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import keboola.adform.masterdata_extractor.pojo.MasterFile;
 
 /**
  *
@@ -36,7 +37,7 @@ import java.util.logging.Logger;
  */
 public class CsvFileMerger {
 
-    public static void mergeFiles(List<String> filePaths, String mergedPath, String mergedName) throws MergeException {
+    public static void mergeFiles(List<MasterFile> masterFiles, String mergedPath, String mergedName) throws MergeException {
         BufferedReader reader = null;
         String headerLine = "";
 
@@ -51,22 +52,25 @@ public class CsvFileMerger {
         int i = 0;
         FileChannel out = null;
         FileOutputStream fout = null;
-        try {
-            headerLine = getLongestHeaders(filePaths);
 
-        } catch (Exception ex) {
-            throw new MergeException(ex.getMessage());
+        try {
+            //validate merged csv files
+            dataStructureMatch(masterFiles);
+        } catch (MergeException ex) {
+            throw ex;
         }
-        for (String fPath : filePaths) {
+
+        for (MasterFile mFile : masterFiles) {
             FileInputStream fis = null;
+            String fPath = mFile.getLocalAbsolutePath();
             try {
                 File file = new File(fPath);
                 //retrieve file header
                 fis = new FileInputStream(file);
                 reader = new BufferedReader(new InputStreamReader(fis));
-                String currHeader = reader.readLine();
+                headerLine = reader.readLine();
 
-                if (currHeader == null) {
+                if (headerLine == null) {
                     continue;
                 }
                 //write header from first file and retrieve filechannel 
@@ -83,7 +87,7 @@ public class CsvFileMerger {
                 FileChannel in = fis.getChannel();
                 long pos = 0;
                 //set position according to header (first run is set by writer)
-                pos = currHeader.length() + 2;//+2 because of NL character
+                pos = headerLine.length() + 2;//+2 because of NL character
 
                 for (long p = pos, l = in.size(); p < l;) {
                     p += in.transferTo(p, l - p, out);
@@ -115,16 +119,16 @@ public class CsvFileMerger {
      * @return header line with the most columns
      * @throws Exception
      */
-    private static String getLongestHeaders(List<String> filePaths) throws Exception {
+    private static String getLongestHeaders(List<MasterFile> mFiles) throws Exception {
         String[] headers = null;
-        String[] lastHeaders = null;
         String headerLine = "";
         String currFile = "";
         BufferedReader reader;
         FileInputStream fis;
         try {
             int maxHeaderSize = 0;
-            for (String fPath : filePaths) {
+            for (MasterFile mFile : mFiles) {
+                String fPath = mFile.getLocalAbsolutePath();
                 currFile = fPath;
 
                 File csvFile = new File(fPath);
@@ -140,7 +144,6 @@ public class CsvFileMerger {
                         headerLine = reader.readLine();
                         reader.close();
                     }
-                    lastHeaders = csvreader.readNext();
 
                 } else {
                     throw new Exception("Error reading csv file header: " + currFile);
@@ -156,6 +159,65 @@ public class CsvFileMerger {
             throw new Exception("CSV file not found. " + currFile + " " + ex.getMessage());
         } catch (IOException ex) {
             throw new Exception("Error reading csv file: " + currFile + " " + ex.getMessage());
+        }
+    }
+
+    /**
+     * Validates the structure of the merged csv files.
+     *
+     * @param mFiles List of MasterFiles to check
+     * @return Returns true if the data structure of all given files matches.
+     * Throws an user exception (MergeException) otherwise.
+     * @throws MergeException
+     */
+    public static boolean dataStructureMatch(List<MasterFile> mFiles) throws MergeException {
+        String[] headers = null;
+        String headerLine = "";
+        String currFile = "";
+        BufferedReader reader;
+        FileInputStream fis;
+        boolean firstRun = true;
+        try {
+            int maxHeaderSize = 0;
+            for (MasterFile mFile : mFiles) {
+                String fPath = mFile.getLocalAbsolutePath();
+                currFile = fPath;
+
+                File csvFile = new File(fPath);
+                FileReader freader = new FileReader(csvFile);
+                CSVReader csvreader = new CSVReader(freader, '\t', CSVWriter.NO_QUOTE_CHARACTER);
+                headers = csvreader.readNext();
+                if (headers != null) {
+                    if (headers.length != maxHeaderSize) {
+
+                        maxHeaderSize = headers.length;
+                        //get header line
+                        fis = new FileInputStream(fPath);
+                        reader = new BufferedReader(new InputStreamReader(fis));
+                        headerLine = reader.readLine();
+                        reader.close();
+                        if (!firstRun) {
+                            throw new MergeException("Data structure has changed within the given interval. File:" + mFile.getName()
+                                    + "; Time tag of the file:" + mFile.getCreated() + ". The number of columns has changed.", 1);
+                        }
+                        firstRun = false;
+
+                    }
+
+                } else {
+                    throw new MergeException("Error reading csv file header: " + currFile, 1);
+                }
+                csvreader.close();
+            }
+            if (maxHeaderSize == 0 || headerLine.equals("")) {
+                throw new MergeException("Zero length header in csv file!", 1);
+            }
+            return true;
+
+        } catch (FileNotFoundException ex) {
+            throw new MergeException("CSV file not found. " + currFile + " " + ex.getMessage(), 1);
+        } catch (IOException ex) {
+            throw new MergeException("Error reading csv file: " + currFile + " " + ex.getMessage(), 1);
         }
     }
 

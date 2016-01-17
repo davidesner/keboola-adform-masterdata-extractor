@@ -35,6 +35,8 @@ public class MasterFile implements Comparable<MasterFile> {
     private Date creationTime;
     @JsonIgnore
     private final String prefix;
+    @JsonIgnore
+    private String localAbsolutePath;
 
     /**
      * Helper constructor to perform binary search in list
@@ -68,6 +70,25 @@ public class MasterFile implements Comparable<MasterFile> {
                 this.prefix = "";
             }
         }
+    }
+
+    public MasterFile(MasterFile f) {
+        this.name = f.getName();
+        this.path = f.getPath();
+        this.absolutePath = f.getAbsolutePath();
+        this.size = f.getSize();
+        this.created = f.getCreated();
+        this.creationTime = f.getCreationTime();
+        this.prefix = f.getPrefix();
+        this.localAbsolutePath = f.getLocalAbsolutePath();
+    }
+
+    public String getLocalAbsolutePath() {
+        return localAbsolutePath;
+    }
+
+    public void setLocalAbsolutePath(String localAbsolutePath) {
+        this.localAbsolutePath = localAbsolutePath;
     }
 
     private void setCreationTime(String created) {

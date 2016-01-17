@@ -34,27 +34,27 @@ public class Extractor {
         this.client = new APIClient(userName, password, masterDataListUrl);
     }
 
-    public List<String> downloadAndUnzip(List<MasterFile> fileList, String folderPath) throws ExtractorException {
+    public List<MasterFile> downloadAndUnzip(List<MasterFile> fileList, String folderPath) throws ExtractorException {
         //download files
 
         downloadFiles(fileList, folderPath);
 
         List<String> rawFilePaths;
         //unzip archives and delete data
-        rawFilePaths = unzip(fileList, folderPath);
+        List<MasterFile> exFiles = unzip(fileList, folderPath);
         //delete zipFiles
         try {
             FileHandler.deleteFile(folderPath + File.separator + fileList.get(0).getPrefix());
         } catch (IOException ex) {
             Logger.getLogger(Extractor.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return rawFilePaths;
+        return exFiles;
 
     }
 
-    public List<String> unzip(List<MasterFile> fileList, String folderPath) throws ExtractorException {
+    public List<MasterFile> unzip(List<MasterFile> fileList, String folderPath) throws ExtractorException {
         byte[] buffer = new byte[2048];
-        List<String> rawFiles = new ArrayList<String>();
+        List<MasterFile> downFiles = new ArrayList<MasterFile>();
         try {
 
             //create output directory is not exists
@@ -95,7 +95,9 @@ public class Extractor {
                         fos.close();
                         ze = zis.getNextEntry();
 
-                        rawFiles.add(newFile.getAbsolutePath());
+                        file.setLocalAbsolutePath(newFile.getAbsolutePath());
+                        downFiles.add(new MasterFile(file));
+
                     }
 
                     zis.closeEntry();
@@ -117,7 +119,8 @@ public class Extractor {
                     }
                     //close resources
                     fos.close();
-                    rawFiles.add(newFile.getAbsolutePath());
+                    file.setLocalAbsolutePath(newFile.getAbsolutePath());
+                    downFiles.add(new MasterFile(file));
                     gis.close();
                 }
                 if (!fileType.equals("gz") && !fileType.equals("zip")) {
@@ -126,7 +129,7 @@ public class Extractor {
 
             }
 
-            return rawFiles;
+            return downFiles;
 
         } catch (IOException ex) {
             throw new ExtractorException("Failed to unzip downloaded file. " + ex.getMessage());

@@ -15,8 +15,10 @@ import keboola.adform.masterdata_extractor.utils.JsonToCsvConvertor;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -110,11 +112,13 @@ public class Runner {
                 if (filesSince.isEmpty()) {
                     continue;
                 }
+                //sort from oldest
+                Collections.sort(filesSince, Collections.reverseOrder());
                 System.out.println("Downloading files with prefix: " + prefix);
-                List<String> csvFilesPaths = ex.downloadAndUnzip(filesSince, dataPath);
+                List<MasterFile> downloadedFiles = ex.downloadAndUnzip(filesSince, dataPath);
 
                 /*This should not happen, check anyway*/
-                if (csvFilesPaths.isEmpty()) {
+                if (downloadedFiles.isEmpty()) {
                     System.out.print("Error downloading files with prefix: " + prefix);
                     System.err.print("Error downloading files with prefix: " + prefix);
                     System.exit(2);
@@ -122,8 +126,9 @@ public class Runner {
 
                 //merge downloaded files
                 String resFileName = config.getParams().getBucket() + "." + prefix.toLowerCase();
+
                 System.out.println("Merging files with prefix: " + prefix);
-                CsvFileMerger.mergeFiles(csvFilesPaths, outTablesPath, resFileName + ".csv");
+                CsvFileMerger.mergeFiles(downloadedFiles, outTablesPath, resFileName + ".csv");
 
                 /*Build manifest file*/
                 String manifest = "destination: " + resFileName + "\n"
@@ -141,7 +146,11 @@ public class Runner {
                 }
                 //delete single csv files
                 try {
-                    FileHandler.deleteFiles(csvFilesPaths);
+                    List<String> filePaths = new ArrayList<String>();
+                    for (MasterFile f : downloadedFiles) {
+                        filePaths.add(f.getLocalAbsolutePath());
+                    }
+                    FileHandler.deleteFiles(filePaths);
                 } catch (IOException ex1) {
 
                     System.out.println("Error deleting single csv files.");
@@ -159,7 +168,12 @@ public class Runner {
             }
             if (config.hasMeta() && metaChanged) {
                 System.out.println("Downloading meta files");
-                List<String> metaFilesPaths = ex.downloadAndUnzip(Arrays.asList(fileList.getMeta()), dataPath);
+                List<MasterFile> metaFiles = ex.downloadAndUnzip(Arrays.asList(fileList.getMeta()), dataPath);
+
+                List<String> metaFilesPaths = new ArrayList<String>();
+                for (MasterFile f : metaFiles) {
+                    metaFilesPaths.add(f.getLocalAbsolutePath());
+                }
 
                 /*Convert from JSON to csv*/
                 JsonToCsvConvertor conv = new JsonToCsvConvertor();
@@ -214,7 +228,7 @@ public class Runner {
             Logger.getLogger(Runner.class.getName()).log(Level.SEVERE, null, ex1);
             System.out.print("Error merging data.");
             System.err.print(ex1.getMessage());
-            System.exit(2);
+            System.exit(ex1.getSeverity());
         }
     }
 }
