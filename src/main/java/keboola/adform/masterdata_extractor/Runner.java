@@ -193,7 +193,7 @@ public class Runner {
                             + "incremental: false\n"
                             + "delimiter: \"\\t\"\n"
                             + "enclosure: \"\"\n"
-                            + "escaped_by: \"\\\\\"";
+                            + "escaped_by: \"\"";
                     File manifestFile = new File(outTablesPath + File.separator + resFileName + ".csv.manifest");
                     try {
                         Files.write(manifest, manifestFile, Charset.forName("UTF-8"));
