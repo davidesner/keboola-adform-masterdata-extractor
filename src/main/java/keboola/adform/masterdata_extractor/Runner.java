@@ -134,8 +134,7 @@ public class Runner {
                 String manifest = "destination: " + resFileName + "\n"
                         + "incremental: true\n"
                         + "delimiter: \"\\t\"\n"
-                        + "enclosure: \"\"\n"
-                        + "escaped_by: \"\"";
+                        + "enclosure: \"\"";
                 File manifestFile = new File(outTablesPath + File.separator + resFileName + ".csv.manifest");
                 try {
                     Files.write(manifest, manifestFile, Charset.forName("UTF-8"));
@@ -192,8 +191,7 @@ public class Runner {
                     String manifest = "destination: " + resFileName + "\n"
                             + "incremental: false\n"
                             + "delimiter: \"\\t\"\n"
-                            + "enclosure: \"\"\n"
-                            + "escaped_by: \"\"";
+                            + "enclosure: \"\"";
                     File manifestFile = new File(outTablesPath + File.separator + resFileName + ".csv.manifest");
                     try {
                         Files.write(manifest, manifestFile, Charset.forName("UTF-8"));
