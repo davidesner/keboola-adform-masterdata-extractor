@@ -129,7 +129,7 @@ public class Runner {
                 }
 
                 //merge downloaded files
-                String resFileName = prefix.toLowerCase() + ".csv";
+                String resFileName = prefix.toLowerCase();
                 System.out.println("Preparing sliced tables...");
                 String[] headerCols = null;
 				try {
@@ -171,10 +171,10 @@ public class Runner {
                 JsonToCsvConvertor conv = new JsonToCsvConvertor();
                 String metaFolder = new File(metaFilesPaths.get(0)).getParent();
                 for (String metaF : config.getParams().getMetaFiles()) {
-                    String resFileName = "meta-" + metaF + ".csv";
+                    String resFileName = "meta-" + metaF;
                     try {
                         System.out.println("Converting meta file: " + metaF + " to CSV");
-                        conv.convert(metaFolder + File.separator + metaF + ".json", outTablesPath + File.separator + resFileName);
+                        conv.convert(metaFolder + File.separator + metaF + ".json", outTablesPath + File.separator + resFileName + ".csv");
                     } catch (Exception ex1) {
                         System.out.print("Error converting meta data file to csv.");
                         System.err.print(ex1.getMessage());
@@ -217,7 +217,7 @@ public class Runner {
     	ManifestFile manFile = new ManifestFile.Builder(resFileName, destination + "." + resFileName)
 				.setIncrementalLoad(incremental).setDelimiter(String.valueOf(DEFAULT_SEPARATOR)).setEnclosure(String.valueOf(DEFAULT_ENCLOSURE))
 				.setColumns(cols).build();
-		ManifestBuilder.buildManifestFile(manFile, outPath, resFileName);	
+		ManifestBuilder.buildManifestFile(manFile, outPath, resFileName + ".csv");	
     }
 
 	private static String[] prepareSlicedTables(List<MasterFile> downloadedFiles) throws Exception {
