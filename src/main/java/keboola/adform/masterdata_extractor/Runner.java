@@ -118,7 +118,7 @@ public class Runner {
                 //sort from oldest
                 Collections.sort(filesSince, Collections.reverseOrder());
                 System.out.println("Downloading files with prefix: " + prefix);
-                String resFileFolder = outTablesPath + File.separator + prefix + ".csv";
+                String resFileFolder = outTablesPath + File.separator + prefix.toLowerCase() + ".csv";
                 List<MasterFile> downloadedFiles = ex.downloadAndUnzip(filesSince, resFileFolder);
 
                 /*This should not happen, check anyway*/
@@ -129,7 +129,7 @@ public class Runner {
                 }
 
                 //merge downloaded files
-                String resFileName = prefix.toLowerCase();
+                String resFileName = prefix.toLowerCase() + ".csv";
                 System.out.println("Preparing sliced tables...");
                 String[] headerCols = null;
 				try {
@@ -171,10 +171,10 @@ public class Runner {
                 JsonToCsvConvertor conv = new JsonToCsvConvertor();
                 String metaFolder = new File(metaFilesPaths.get(0)).getParent();
                 for (String metaF : config.getParams().getMetaFiles()) {
-                    String resFileName = "meta-" + metaF;
+                    String resFileName = "meta-" + metaF + ".csv";
                     try {
                         System.out.println("Converting meta file: " + metaF + " to CSV");
-                        conv.convert(metaFolder + File.separator + metaF + ".json", outTablesPath + File.separator + resFileName + ".csv");
+                        conv.convert(metaFolder + File.separator + metaF + ".json", outTablesPath + File.separator + resFileName);
                     } catch (Exception ex1) {
                         System.out.print("Error converting meta data file to csv.");
                         System.err.print(ex1.getMessage());
