@@ -2,19 +2,8 @@
  */
 package keboola.adform.masterdata_extractor;
 
-import com.google.common.io.Files;
-import keboola.adform.masterdata_extractor.api_client.ClientException;
-import keboola.adform.masterdata_extractor.config.KBCConfig;
-import keboola.adform.masterdata_extractor.config.YamlConfigParser;
-import keboola.adform.masterdata_extractor.filemerger.CsvFileMerger;
-import keboola.adform.masterdata_extractor.filemerger.MergeException;
-import keboola.adform.masterdata_extractor.utils.FileHandler;
-import keboola.adform.masterdata_extractor.pojo.MasterFile;
-import keboola.adform.masterdata_extractor.pojo.MasterFileList;
-import keboola.adform.masterdata_extractor.utils.JsonToCsvConvertor;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -24,12 +13,27 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import keboola.adform.masterdata_extractor.api_client.ClientException;
+import keboola.adform.masterdata_extractor.config.KBCConfig;
+import keboola.adform.masterdata_extractor.config.YamlConfigParser;
+import keboola.adform.masterdata_extractor.config.tableconfig.ManifestBuilder;
+import keboola.adform.masterdata_extractor.config.tableconfig.ManifestFile;
+import keboola.adform.masterdata_extractor.pojo.MasterFile;
+import keboola.adform.masterdata_extractor.pojo.MasterFileList;
+import keboola.adform.masterdata_extractor.utils.CsvUtils;
+import keboola.adform.masterdata_extractor.utils.FileHandler;
+import keboola.adform.masterdata_extractor.utils.JsonToCsvConvertor;
+
 /**
  *
  * @author David Esner <esnerda at gmail.com>
  * @created 2015
  */
 public class Runner {
+
+	private static char DEFAULT_SEPARATOR = '\t';
+	private static char DEFAULT_ENCLOSURE = '"';
+	private static char DEFAULT_ESCAPE_CHAR = '\\';
 
     public static void main(String[] args) {
 
@@ -63,8 +67,7 @@ public class Runner {
             System.exit(1);
         }
         boolean dataExtracted = false;
-        Extractor ex = new Extractor(config.getParams().getUser(), config.getParams().getPass(), config.getParams().getMdListUrl());
-        File dataFolder = new File(dataPath);
+        Extractor ex = new Extractor(config.getParams().getUser(), config.getParams().getPass(), config.getParams().getMdListUrl());      
         try {
             //authenticate, get session token
             ex.client.authenticate();
@@ -115,7 +118,8 @@ public class Runner {
                 //sort from oldest
                 Collections.sort(filesSince, Collections.reverseOrder());
                 System.out.println("Downloading files with prefix: " + prefix);
-                List<MasterFile> downloadedFiles = ex.downloadAndUnzip(filesSince, dataPath);
+                String resFileFolder = outTablesPath + File.separator + prefix + ".csv";
+                List<MasterFile> downloadedFiles = ex.downloadAndUnzip(filesSince, resFileFolder);
 
                 /*This should not happen, check anyway*/
                 if (downloadedFiles.isEmpty()) {
@@ -125,35 +129,24 @@ public class Runner {
                 }
 
                 //merge downloaded files
-                String resFileName = config.getParams().getBucket() + "." + prefix.toLowerCase();
+                String resFileName = prefix.toLowerCase();
+                System.out.println("Preparing sliced tables...");
+                String[] headerCols = null;
+				try {
+					headerCols = prepareSlicedTables(downloadedFiles);
+				} catch (Exception e) {
+					System.err.println("Error processing files." + e.getMessage());
+					System.exit(2);
+				}
 
-                System.out.println("Merging files with prefix: " + prefix);
-                CsvFileMerger.mergeFiles(downloadedFiles, outTablesPath, resFileName + ".csv");
-
-                /*Build manifest file*/
-                String manifest = "destination: " + resFileName + "\n"
-                        + "incremental: true\n"
-                        + "delimiter: \"\\t\"\n"
-                        + "enclosure: \"\"";
-                File manifestFile = new File(outTablesPath + File.separator + resFileName + ".csv.manifest");
+                /*Build manifest file*/               
                 try {
-                    Files.write(manifest, manifestFile, Charset.forName("UTF-8"));
-                } catch (IOException ex1) {
+                	buildManifestFile(resFileName,  config.getParams().getBucket(), outTablesPath, headerCols, true);
+                } catch (Exception ex1) {
                     System.out.println("Error writing manifest file." + ex1.getMessage());
                     System.err.println(ex1.getMessage());
                     System.exit(2);
-                }
-                //delete single csv files
-                try {
-                    List<String> filePaths = new ArrayList<String>();
-                    for (MasterFile f : downloadedFiles) {
-                        filePaths.add(f.getLocalAbsolutePath());
-                    }
-                    FileHandler.deleteFiles(filePaths);
-                } catch (IOException ex1) {
-
-                    System.out.println("Error deleting single csv files.");
-                }
+                }               
                 i++;
                 dataExtracted = true;
             }
@@ -166,7 +159,7 @@ public class Runner {
                 metaChanged = fileList.metaChangedSince(startInterval);
             }
             if (config.hasMeta() && metaChanged) {
-                System.out.println("Downloading meta files");
+                System.out.println("Downloading meta files");                
                 List<MasterFile> metaFiles = ex.downloadAndUnzip(Arrays.asList(fileList.getMeta()), dataPath);
 
                 List<String> metaFilesPaths = new ArrayList<String>();
@@ -178,7 +171,7 @@ public class Runner {
                 JsonToCsvConvertor conv = new JsonToCsvConvertor();
                 String metaFolder = new File(metaFilesPaths.get(0)).getParent();
                 for (String metaF : config.getParams().getMetaFiles()) {
-                    String resFileName = config.getParams().getBucket() + "." + "meta-" + metaF;
+                    String resFileName = "meta-" + metaF;
                     try {
                         System.out.println("Converting meta file: " + metaF + " to CSV");
                         conv.convert(metaFolder + File.separator + metaF + ".json", outTablesPath + File.separator + resFileName + ".csv");
@@ -188,14 +181,9 @@ public class Runner {
                         System.exit(1);
                     }
                     /*Build manifest file,not incremental*/
-                    String manifest = "destination: " + resFileName + "\n"
-                            + "incremental: false\n"
-                            + "delimiter: \"\\t\"\n"
-                            + "enclosure: \"\"";
-                    File manifestFile = new File(outTablesPath + File.separator + resFileName + ".csv.manifest");
                     try {
-                        Files.write(manifest, manifestFile, Charset.forName("UTF-8"));
-                    } catch (IOException ex1) {
+                    	buildManifestFile(resFileName, config.getParams().getBucket(), outTablesPath, null, false);
+                    } catch (Exception ex1) {
                         System.out.println("Error writing manifest file." + ex1.getMessage());
                         System.err.println(ex1.getMessage());
                         System.exit(2);
@@ -222,11 +210,32 @@ public class Runner {
             System.out.print("Error extracting data.");
             System.err.print(ex1.getMessage());
             System.exit(ex1.getSeverity());
-        } catch (MergeException ex1) {
-            Logger.getLogger(Runner.class.getName()).log(Level.SEVERE, null, ex1);
-            System.out.print("Error merging data.");
-            System.err.print(ex1.getMessage());
-            System.exit(ex1.getSeverity());
         }
     }
+
+    private static void buildManifestFile(String resFileName, String destination, String outPath, String [] cols, boolean incremental) throws Exception {
+    	ManifestFile manFile = new ManifestFile.Builder(resFileName, destination + "." + resFileName)
+				.setIncrementalLoad(incremental).setDelimiter(String.valueOf(DEFAULT_SEPARATOR)).setEnclosure(String.valueOf(DEFAULT_ENCLOSURE))
+				.setColumns(cols).build();
+		ManifestBuilder.buildManifestFile(manFile, outPath, resFileName);	
+    }
+
+	private static String[] prepareSlicedTables(List<MasterFile> downloadedFiles) throws Exception {
+		List<File> files = new ArrayList<>();
+		for(MasterFile mf : downloadedFiles) {
+			files.add(new File(mf.getLocalAbsolutePath()));
+		}
+		
+		// get colums
+				String[] headerCols = CsvUtils.readHeader(files.get(0),
+						DEFAULT_SEPARATOR, DEFAULT_ENCLOSURE, DEFAULT_ESCAPE_CHAR, false, false);
+				// remove headers and create results
+				for (File mFile : files) {
+					CsvUtils.removeHeaderFromCsv(mFile);					
+				}
+				//in case some files did not contain any data
+				CsvUtils.deleteEmptyFiles(files);				
+				return headerCols;
+		
+	}
 }

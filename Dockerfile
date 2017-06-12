@@ -1,25 +1,13 @@
-FROM centos:centos7
+FROM maven:3.5.0-jdk-7
 MAINTAINER David Esner <esnerda@gmail.com>
 
-ENV APP_VERSION 1.1.4
-
-RUN yum -y update && \
-	yum -y install \
-		epel-release \
-		git \
-		tar \
-		&& \
-	yum clean all
-
-
-RUN yum -y install wget
-RUN wget http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo -O /etc/yum.repos.d/epel-apache-maven.repo
-RUN yum -y install apache-maven
+ENV APP_VERSION 1.1.5
 
 WORKDIR /home
 
-ENV JAVA_HOME /usr/lib/jvm/jre-1.7.0
-RUN --branch v1.1.4 https://github.com/davidesner/keboola-adform-masterdata-extractor ./  
-RUN mvn compile
+RUN export MAVEN_OPTS="-XX:MaxRAM=500m"
 
-ENTRYPOINT mvn exec:java -Dexec.args=/data  
+RUN https://github.com/davidesner/keboola-adform-masterdata-extractor ./
+RUN mvn -q compile
+
+ENTRYPOINT mvn exec:java -Dexec.args=/data
