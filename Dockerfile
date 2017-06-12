@@ -10,4 +10,4 @@ RUN export MAVEN_OPTS="-XX:MaxRAM=500m"
 RUN git clone https://github.com/davidesner/keboola-adform-masterdata-extractor ./
 RUN mvn -q compile
 
-ENTRYPOINT mvn exec:java -Dexec.args=/data
+ENTRYPOINT mvn -q exec:java -Dexec.args=/data
