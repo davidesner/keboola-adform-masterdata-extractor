@@ -125,7 +125,7 @@ public class Runner {
                 if (downloadedFiles.isEmpty()) {
                     System.out.print("Error downloading files with prefix: " + prefix);
                     System.err.print("Error downloading files with prefix: " + prefix);
-                    System.exit(2);
+                    System.exit(1);
                 }
 
                 //merge downloaded files

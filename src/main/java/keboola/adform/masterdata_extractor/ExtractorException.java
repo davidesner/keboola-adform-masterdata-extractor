@@ -13,7 +13,7 @@ public class ExtractorException extends Exception {
 
     public ExtractorException(String message) {
         super(message);
-        severity = 2;
+        severity = 1;
     }
 
     public ExtractorException(String message, int severity) {
