@@ -2,8 +2,6 @@
  */
 package keboola.adform.masterdata_extractor.config;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -12,6 +10,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  *
  * @author David Esner <esnerda at gmail.com>
@@ -19,15 +20,17 @@ import java.util.Map;
  */
 public class KBCParameters {
 
-    private final static String[] REQUIRED_FIELDS = {"user", "pass", "mdListUrl", "bucket", "prefixes", "daysInterval"};
+    private final static String[] REQUIRED_FIELDS = {"user", "pass", "mdListId", "bucket", "prefixes", "daysInterval"};
     private final Map<String, Object> parametersMap;
     private Date date_to;
     @JsonProperty("user")
     private String user;
     @JsonProperty("#pass")
     private String pass;
-    @JsonProperty("mdListUrl")
-    private String mdListUrl;
+    
+    @JsonProperty("mdListId")
+    private String mdListId;
+
     @JsonProperty("daysInterval")
     private int daysInterval;
     //end date of fetched interval in format: 05-10-2015 21:00
@@ -47,13 +50,18 @@ public class KBCParameters {
 
     @JsonCreator
     public KBCParameters(@JsonProperty("user") String user, @JsonProperty("#pass") String pass,
+    		 @JsonProperty("mdListId") String mdListId,
             @JsonProperty("mdListUrl") String mdListUrl, @JsonProperty("daysInterval") int daysInterval,
             @JsonProperty("dateTo") String dateTo, @JsonProperty("bucket") String bucket,
             @JsonProperty("prefixes") ArrayList<String> prefixes, @JsonProperty("metaFiles") ArrayList<String> metaFiles) throws ParseException {
         parametersMap = new HashMap<String, Object>();
         this.user = user;
         this.pass = pass;
-        this.mdListUrl = mdListUrl;
+        this.mdListId = mdListId;
+        //legacy backward compatibilty
+        if (this.mdListId == null && mdListUrl != null) {
+        	this.mdListId = mdListUrl.substring(mdListUrl.lastIndexOf("/") + 1);
+        }
         this.daysInterval = daysInterval;
         this.dateTo = dateTo;
         if (dateTo != null) {
@@ -66,8 +74,8 @@ public class KBCParameters {
         //set param map
         parametersMap.put("user", user);
         parametersMap.put("pass", pass);
-        parametersMap.put("mdListUrl", mdListUrl);
-        parametersMap.put("daysInterval", mdListUrl);
+        parametersMap.put("mdListId", this.mdListId);
+        parametersMap.put("daysInterval", daysInterval);
         parametersMap.put("dateTo", dateTo);
         parametersMap.put("bucket", bucket);
         parametersMap.put("prefixes", prefixes);
@@ -155,14 +163,6 @@ public class KBCParameters {
         this.pass = pass;
     }
 
-    public String getMdListUrl() {
-        return mdListUrl;
-    }
-
-    public void setMdListUrl(String mdListUrl) {
-        this.mdListUrl = mdListUrl;
-    }
-
     public int getDaysInterval() {
         return daysInterval;
     }
@@ -170,4 +170,14 @@ public class KBCParameters {
     public void setDaysInterval(int daysInterval) {
         this.daysInterval = daysInterval;
     }
+
+	public String getMdListId() {
+		return mdListId;
+	}
+
+	public void setMdListId(String mdListId) {
+		this.mdListId = mdListId;
+	}
+    
+    
 }

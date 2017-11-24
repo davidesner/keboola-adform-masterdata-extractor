@@ -2,29 +2,37 @@
  */
 package keboola.adform.masterdata_extractor.api_client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import keboola.adform.masterdata_extractor.Extractor;
-import keboola.adform.masterdata_extractor.pojo.MasterFileList;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.json.JSONObject;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import keboola.adform.masterdata_extractor.Extractor;
+import keboola.adform.masterdata_extractor.pojo.MasterFile;
+import keboola.adform.masterdata_extractor.pojo.MasterFileList;
 
 /**
  *
@@ -34,16 +42,20 @@ import org.json.JSONObject;
 public class APIClient {
 
     private Exception apiException;
-    private static final String LOGIN_URL = "https://api.adform.com/Services/Security/Login";
+    private static final String BASE_URL = "https://api.adform.com";
+    private static final String LOGIN_URL_PATH = "/Services/Security/Login";
+    private static final String MD_FILES_URL_PATH = "/v1/buyer/masterdata/files/";
+    private static final String DOWNLOAD_F_URL_PATH = "/v1/buyer/masterdata/download/";
     private final String userName;
     private final String password;
-    private final String masterDataListUrl;
+    private final String masterDataListID;
     private String AUTH_TICKET;
+	private BasicCookieStore cookieStore;
 
-    public APIClient(String userName, String password, String masterDataListUrl) {
+    public APIClient(String userName, String password, String masterDataListID) {
         this.userName = userName;
         this.password = password;
-        this.masterDataListUrl = masterDataListUrl;
+        this.masterDataListID = masterDataListID;
     }
 
     public Exception getApiException() {
@@ -55,9 +67,8 @@ public class APIClient {
     }
 
     public void authenticate() throws ClientException {
-        try {
-            CloseableHttpClient client = HttpClients.createDefault();
-            HttpPost httpPost = new HttpPost(LOGIN_URL);
+        try (CloseableHttpClient client = HttpClients.createDefault();){
+            HttpPost httpPost = new HttpPost(BASE_URL + LOGIN_URL_PATH);
 
             String credsJson = "{\"Username\":\"" + userName + "\",\"Password\":\"" + password + "\"}\"";
 
@@ -70,6 +81,8 @@ public class APIClient {
             //check response code
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != 200) {
+            	client.close();
+            	response.close();
                 throw new ClientException("Authentization error. Http Response code:" + statusCode + " - " + response.getStatusLine().getReasonPhrase());
             }
 
@@ -82,31 +95,51 @@ public class APIClient {
             }
 
             JSONObject resp = new JSONObject(result.toString());
-            AUTH_TICKET = resp.getString("Ticket");
-            client.close();
-
+            setHttpContext(resp.getString("Ticket"));  
+            
+            
+            response.close();
         } catch (IOException ex) {
             Logger.getLogger(Extractor.class
                     .getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    public MasterFileList retrieveFileList() throws ClientException {
+    private void setHttpContext(String authTicket) {    	
+    	BasicCookieStore cookieStore = new BasicCookieStore();
+        BasicClientCookie cookie = new BasicClientCookie("authTicket", authTicket);
+        cookie.setPath("/");
+        cookie.setDomain("api.adform.com");         
+        cookieStore.addCookie(cookie);
+        this.cookieStore = cookieStore;
+    }
+
+    private  BasicCookieStore getCookieStore() {
+		return cookieStore;
+	}
+
+	public void setCookieStore(BasicCookieStore cookieStore) {
+		this.cookieStore = cookieStore;
+	}
+
+	public MasterFileList retrieveFileList() throws ClientException {
         try {
-            if (AUTH_TICKET == null) {
+            if (cookieStore == null) {
                 authenticate();
             }
 
-            CloseableHttpClient client = HttpClients.createDefault();
+            HttpClient client = HttpClientBuilder.create().setDefaultCookieStore(getCookieStore()).build();
+            
 
-            HttpGet httpGet = new HttpGet(masterDataListUrl + "?render=json&authTicket=" + AUTH_TICKET);
+            HttpGet httpGet = new HttpGet(BASE_URL + MD_FILES_URL_PATH + masterDataListID);
             httpGet.setHeader("Accept", "application/json");
-
+            
+            
             //disable redirects
             RequestConfig requestConfig = RequestConfig.custom().setRedirectsEnabled(false).build();
             httpGet.setConfig(requestConfig);
 
-            CloseableHttpResponse response = client.execute(httpGet);
+            HttpResponse response = client.execute(httpGet);
 
             //check response code
             int statusCode = response.getStatusLine().getStatusCode();
@@ -124,9 +157,9 @@ public class APIClient {
 
             ObjectMapper mapper = new ObjectMapper();
             //JSON to POJO
-            MasterFileList fileList = mapper.readValue(result.toString(), MasterFileList.class);
-            return fileList;
-        } catch (IOException ex) {
+            MasterFile[] files = mapper.readValue(result.toString(), MasterFile[].class);            
+            return new MasterFileList(Arrays.asList(files));
+        } catch (IOException ex) {		
             Logger.getLogger(Extractor.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
@@ -138,15 +171,15 @@ public class APIClient {
      * @param fileUrl - URL of the file to download
      * @param downloadPath - path where the file is to be downloaded
      * @param lastRun - indicates it is a last run and API exception should be
-     * set if fail response code is returned
+     * set if fail response code is returned	
      * @return
      * @throws ClientException
      */
-    public boolean downloadFile(String fileUrl, String downloadPath, boolean lastRun) throws ClientException {
+    public boolean downloadFile(String fileId, String downloadPath, boolean lastRun) throws ClientException {
         try {
             FileOutputStream fos = null;
-            CloseableHttpClient client = HttpClients.createDefault();
-            HttpGet httpget = new HttpGet(fileUrl + "?authTicket=" + AUTH_TICKET);
+            CloseableHttpClient client = HttpClientBuilder.create().setDefaultCookieStore(getCookieStore()).build();
+            HttpGet httpget = new HttpGet(BASE_URL + DOWNLOAD_F_URL_PATH + masterDataListID + "/" + fileId);
             //disable redirects
             RequestConfig requestConfig = RequestConfig.custom().setRedirectsEnabled(false).build();
             httpget.setConfig(requestConfig);
@@ -155,7 +188,7 @@ public class APIClient {
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != 200) {
                 if (lastRun) {
-                    setApiException(new Exception("Failed to retrieve file from url: " + fileUrl + " Server returned response code: " + statusCode));
+                    setApiException(new Exception("Failed to retrieve file id: " + fileId + " Server returned response code: " + statusCode));
                     return false;
                 }
                 if (statusCode == 302) {

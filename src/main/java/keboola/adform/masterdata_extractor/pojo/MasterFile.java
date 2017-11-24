@@ -2,17 +2,11 @@
  */
 package keboola.adform.masterdata_extractor.pojo;
 
+import java.util.Date;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -21,15 +15,15 @@ import java.util.logging.Logger;
  */
 public class MasterFile implements Comparable<MasterFile> {
 
+	@JsonProperty("id")
+	private String id;
     @JsonProperty("name")
     private String name;
-    @JsonProperty("path")
-    private String path;
-    @JsonProperty("absolutePath")
-    private String absolutePath;
+    @JsonProperty("setup")
+    private String setup;
     @JsonProperty("size")
     private Double size;
-    @JsonProperty("created")
+    @JsonProperty("createdAt")
     private String created;
     @JsonIgnore
     private Date creationTime;
@@ -49,10 +43,10 @@ public class MasterFile implements Comparable<MasterFile> {
     }
 
     @JsonCreator
-    public MasterFile(@JsonProperty("path") String path, @JsonProperty("absolutePath") String absolutePath,
-            @JsonProperty("size") Double size, @JsonProperty("created") String created, @JsonProperty("name") String name) {
-        this.path = path;
-        this.absolutePath = absolutePath;
+    public MasterFile(@JsonProperty("id") String id, @JsonProperty("setup") String setup, 
+            @JsonProperty("size") Double size, @JsonProperty("createdAt") String created, @JsonProperty("name") String name) {
+    	this.id = id;
+        this.setup = setup;
         this.size = size;
         this.created = created;
         this.name = name;
@@ -73,32 +67,19 @@ public class MasterFile implements Comparable<MasterFile> {
     }
 
     public MasterFile(MasterFile f) {
+    	this.id = f.getId();
         this.name = f.getName();
-        this.path = f.getPath();
-        this.absolutePath = f.getAbsolutePath();
+        this.setup = f.getSetup();
         this.size = f.getSize();
         this.created = f.getCreated();
+        this.localAbsolutePath = f.localAbsolutePath;
         this.creationTime = f.getCreationTime();
         this.prefix = f.getPrefix();
-        this.localAbsolutePath = f.getLocalAbsolutePath();
-    }
-
-    public String getLocalAbsolutePath() {
-        return localAbsolutePath;
-    }
-
-    public void setLocalAbsolutePath(String localAbsolutePath) {
-        this.localAbsolutePath = localAbsolutePath;
     }
 
     private void setCreationTime(String created) {
-        try {
-
-            SimpleDateFormat format = new SimpleDateFormat("MMM d, yyyy h:mm:ss a", Locale.ENGLISH);
-            this.creationTime = format.parse(created);
-        } catch (ParseException ex) {
-            Logger.getLogger(MasterFile.class.getName()).log(Level.SEVERE, null, ex);
-        }
+         this.creationTime = javax.xml.bind.DatatypeConverter.parseDateTime(created).getTime();
+       
     }
 
     public String getPrefix() {
@@ -113,20 +94,12 @@ public class MasterFile implements Comparable<MasterFile> {
         this.name = name;
     }
 
-    public String getPath() {
-        return path;
+    public String getSetup() {
+        return setup;
     }
 
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    public String getAbsolutePath() {
-        return absolutePath;
-    }
-
-    public void setAbsolutePath(String absolutePath) {
-        this.absolutePath = absolutePath;
+    public void setSetup(String setup) {
+        this.setup = setup;
     }
 
     public Double getSize() {
@@ -148,12 +121,24 @@ public class MasterFile implements Comparable<MasterFile> {
     public Date getCreationTime() {
         return creationTime;
     }
+    
+    public String getId() {
+		return id;
+	}
 
-    //TODO: implement function removeFilesBefore date
-    public void removeFilesBefore(Date dateTime) {
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    @Override
+    public String getLocalAbsolutePath() {
+		return localAbsolutePath;
+	}
+
+	public void setLocalAbsolutePath(String localAbsolutePath) {
+		this.localAbsolutePath = localAbsolutePath;
+	}
+
+	@Override
     public int compareTo(MasterFile file2) {
         if (this.getCreationTime().before(file2.getCreationTime())) {
             return 1;

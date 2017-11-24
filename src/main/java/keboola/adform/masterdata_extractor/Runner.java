@@ -5,7 +5,6 @@ package keboola.adform.masterdata_extractor;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -44,10 +43,10 @@ public class Runner {
         String dataPath = args[0];
         String outTablesPath = dataPath + File.separator + "out" + File.separator + "tables"; //parse config
         KBCConfig config = null;
-        File confFile = new File(args[0] + File.separator + "config.yml");
+        File confFile = new File(args[0] + File.separator + "config.json");
         if (!confFile.exists()) {
-            System.out.println("config.yml does not exist!");
-            System.err.println("config.yml does not exist!");
+            System.out.println("config.json does not exist!");
+            System.err.println("config.json does not exist!");
             System.exit(1);
         }
         //Parse config file
@@ -67,7 +66,7 @@ public class Runner {
             System.exit(1);
         }
         boolean dataExtracted = false;
-        Extractor ex = new Extractor(config.getParams().getUser(), config.getParams().getPass(), config.getParams().getMdListUrl());      
+        Extractor ex = new Extractor(config.getParams().getUser(), config.getParams().getPass(), config.getParams().getMdListId());      
         try {
             //authenticate, get session token
             ex.client.authenticate();
@@ -151,30 +150,25 @@ public class Runner {
                 dataExtracted = true;
             }
 
-            /*Download metadata files*/
-            boolean metaChanged;
-            if (config.getParams().getDate_to() != null) {
-                metaChanged = fileList.metaChangedSince(startInterval, config.getParams().getDate_to());
-            } else {
-                metaChanged = fileList.metaChangedSince(startInterval);
-            }
-            if (config.hasMeta() && metaChanged) {
-                System.out.println("Downloading meta files");                
-                List<MasterFile> metaFiles = ex.downloadAndUnzip(Arrays.asList(fileList.getMeta()), dataPath);
-
-                List<String> metaFilesPaths = new ArrayList<String>();
-                for (MasterFile f : metaFiles) {
-                    metaFilesPaths.add(f.getLocalAbsolutePath());
+            
+            if (config.hasMeta()) {
+                System.out.println("Downloading meta files");          
+                List<MasterFile> filesSince = null;
+                if (config.getParams().getDate_to() != null) {
+                    filesSince = fileList.getFilesSince(startInterval, config.getParams().getDate_to(), "meta");
+                } else {
+                    filesSince = fileList.getFilesSince(startInterval, "meta");
                 }
-
+                List<MasterFile> metaFiles = ex.downloadAndUnzip(filesSince, dataPath);
+                              List<String> metaFilesIds = new ArrayList<String>();
+               
                 /*Convert from JSON to csv*/
                 JsonToCsvConvertor conv = new JsonToCsvConvertor();
-                String metaFolder = new File(metaFilesPaths.get(0)).getParent();
                 for (String metaF : config.getParams().getMetaFiles()) {
                     String resFileName = "meta-" + metaF;
                     try {
                         System.out.println("Converting meta file: " + metaF + " to CSV");
-                        conv.convert(metaFolder + File.separator + metaF + ".json", outTablesPath + File.separator + resFileName + ".csv");
+                        conv.convert(dataPath + File.separator + metaF + ".json", outTablesPath + File.separator + resFileName + ".csv");
                     } catch (Exception ex1) {
                         System.out.print("Error converting meta data file to csv.");
                         System.err.print(ex1.getMessage());
@@ -192,7 +186,7 @@ public class Runner {
                 dataExtracted = true;
                 /*delete original JSON files*/
                 try {
-                    FileHandler.deleteFiles(metaFilesPaths);
+                    FileHandler.deleteFiles(metaFilesIds);
                 } catch (IOException ex1) {
                     System.out.println("Error deleting original meta files. " + ex1.getMessage());
                 }

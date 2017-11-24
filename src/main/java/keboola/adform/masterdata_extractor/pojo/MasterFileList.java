@@ -2,14 +2,13 @@
  */
 package keboola.adform.masterdata_extractor.pojo;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Collections2;
 import java.util.ArrayList;
 import java.util.Collections;
-
 import java.util.Date;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  *
@@ -17,15 +16,11 @@ import java.util.List;
  * @created 2015
  */
 public class MasterFileList {
-
-    @JsonProperty("meta")
-    private MasterFile meta;
     @JsonProperty("files")
     private List<MasterFile> files;
 
     @JsonCreator
-    public MasterFileList(@JsonProperty("meta") MasterFile meta, @JsonProperty("files") List<MasterFile> files) {
-        this.meta = meta;
+    public MasterFileList(@JsonProperty("files") List<MasterFile> files) {
         this.files = files;
         Collections.sort(files);
     }
@@ -99,30 +94,6 @@ public class MasterFileList {
             }
         }
         return list;
-    }
-
-    public MasterFile getMeta() {
-        return meta;
-    }
-
-    public boolean metaChangedSince(Date date_from, Date date_to) {
-        if (meta.getCreationTime().before(date_to) && meta.getCreationTime().after(date_from)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public boolean metaChangedSince(Date date_from) {
-        if (meta.getCreationTime().after(date_from)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public void setMeta(MasterFile meta) {
-        this.meta = meta;
     }
 
     public List<MasterFile> getFiles() {

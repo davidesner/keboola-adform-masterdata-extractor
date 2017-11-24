@@ -2,10 +2,6 @@
  */
 package keboola.adform.masterdata_extractor;
 
-import keboola.adform.masterdata_extractor.api_client.ClientException;
-import keboola.adform.masterdata_extractor.api_client.APIClient;
-import keboola.adform.masterdata_extractor.utils.FileHandler;
-import keboola.adform.masterdata_extractor.pojo.MasterFile;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -17,6 +13,11 @@ import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import keboola.adform.masterdata_extractor.api_client.APIClient;
+import keboola.adform.masterdata_extractor.api_client.ClientException;
+import keboola.adform.masterdata_extractor.pojo.MasterFile;
+import keboola.adform.masterdata_extractor.utils.FileHandler;
 
 /**
  *
@@ -162,7 +163,7 @@ public class Extractor {
                 r++;
 
                 try {
-                    succ = client.downloadFile(file.getAbsolutePath(), filePath, false);
+                    succ = client.downloadFile(file.getId(), filePath, false);
                 } catch (ClientException ex) {
                     throw new ExtractorException("Failed to download files. " + ex.getMessage());
                 }
@@ -171,7 +172,7 @@ public class Extractor {
             if (r == RETRIES - 1 || !succ) {
 
                 try {
-                    succ = client.downloadFile(file.getAbsolutePath(), filePath, true);
+                    succ = client.downloadFile(file.getId(), filePath, true);
                     if (!succ) {
                         throw new ExtractorException("Failed to download files. " + client.getApiException().getMessage());
                     }
