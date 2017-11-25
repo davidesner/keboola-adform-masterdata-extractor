@@ -64,7 +64,7 @@ public class KBCParameters {
         }
         this.daysInterval = daysInterval;
         this.dateTo = dateTo;
-        if (dateTo != null) {
+        if (dateTo != null || !"".equals(dateTo)) {
             setDate_to(dateTo);
         }
 
