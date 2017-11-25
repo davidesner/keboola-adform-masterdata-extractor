@@ -1,0 +1,170 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"title": "AdForm Masterdata extractor config",
+	"type": "object",
+	"properties": {
+		"user": {
+			"propertyOrder": 1000,
+			"title": "User Name",
+			"type": "string",
+			"description": "AdForm user name"
+		},
+		"#pass": {
+			"propertyOrder": 2000,
+			"title": "Password",
+			"type": "string",
+			"description": "AdForm password"
+		},
+		"mdListId": {
+			"propertyOrder": 3000,
+			"title": "Setup ID",
+			"type": "string",
+			"description": "Your unique Master Data setup identificator"
+		},
+		"daysInterval": {
+			"propertyOrder": 4000,
+			"title": "Days interval",
+			"type": "number",
+			"default": 1,
+			"description": "Number of days since current date specifiing the interval of retrieved data."
+		},
+		"dateTo": {
+			"propertyOrder": 4500,
+			"title": "Date To",
+			"type": "string",
+			"description": "[Optional] Top boundary of the date interval. If not specified, current date is considered. Format: dd-mm-yyyy hh:mm "
+		},
+		"bucket": {
+			"propertyOrder": 4800,
+			"title": "Output bucket",
+			"type": "string",
+			"description": "Result Storage bucket path."
+		},
+		"prefixes": {
+			"type": "array",
+			"format": "checkbox",
+			"uniqueItems": true,
+			"title": "Datasets",
+			"propertyOrder": 5000,
+			"description": "List of required Masterdata datasets",
+			"items": {
+				"type": "string",
+				"enum": [
+					"Click",
+					"Impression",
+					"Trackingpoint"
+				],
+				"default": [
+					"Click",
+					"Impression",
+					"Trackingpoint"
+				],
+				"options": {
+					"enum_titles": [
+						"Click",
+						"Impression",
+						"Trackingpoint"
+					]
+				}
+			}
+		},
+		"metaFiles": {
+			"type": "array",
+			"format": "checkbox",
+			"uniqueItems": true,
+			"title": "Metadata",
+			"propertyOrder": 6000,
+			"description": "List of required Masterdata metadata datasets",
+			"items": {
+				"type": "string",
+				"enum": [
+					"zip-codes",
+					"trackingpoints",
+					"tags",
+					"screensizes",
+					"placements-activities",
+					"parties",
+					"orderstatuses",
+					"operatingsystems",
+					"medias",
+					"languages",
+					"inventorysources",
+					"iabcategories",
+					"geolocations",
+					"events",
+					"devices",
+					"deals",
+					"daily-costs",
+					"costs",
+					"clients",
+					"clickdetails-paidkeywords",
+					"campaigns",
+					"browsers",
+					"banners-adgroups"
+				],
+				"default": [
+					"zip-codes",
+					"trackingpoints",
+					"tags",
+					"screensizes",
+					"placements-activities",
+					"parties",
+					"orderstatuses",
+					"operatingsystems",
+					"medias",
+					"languages",
+					"inventorysources",
+					"iabcategories",
+					"geolocations",
+					"events",
+					"devices",
+					"deals",
+					"daily-costs",
+					"costs",
+					"clients",
+					"clickdetails-paidkeywords",
+					"campaigns",
+					"browsers",
+					"banners-adgroups"
+				],
+				"options": {
+					"enum_titles": [
+						"zip-codes",
+						"trackingpoints",
+						"tags",
+						"screensizes",
+						"placements-activities",
+						"parties",
+						"orderstatuses",
+						"operatingsystems",
+						"medias",
+						"languages",
+						"inventorysources",
+						"iabcategories",
+						"geolocations",
+						"events",
+						"devices",
+						"deals",
+						"daily-costs",
+						"costs",
+						"clients",
+						"clickdetails-paidkeywords",
+						"campaigns",
+						"browsers",
+						"banners-adgroups"
+					]
+				}
+			}
+		}
+	},
+	"required": [
+		"user",
+		"#pass",
+		"mdListId",
+		"daysInterval",
+		"dateTo",
+		"bucket",
+		"prefixes",
+		"metaFiles"
+	]
+}
