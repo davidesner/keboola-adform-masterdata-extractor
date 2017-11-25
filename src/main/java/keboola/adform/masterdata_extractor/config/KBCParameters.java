@@ -63,8 +63,8 @@ public class KBCParameters {
         	this.mdListId = mdListUrl.substring(mdListUrl.lastIndexOf("/") + 1);
         }
         this.daysInterval = daysInterval;
-        this.dateTo = dateTo;
-        if (dateTo != null || !"".equals(dateTo)) {
+        this.dateTo = !"".equals(dateTo) ? dateTo : null;
+        if (this.dateTo != null) {
             setDate_to(dateTo);
         }
 
