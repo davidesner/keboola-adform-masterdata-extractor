@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 
 import keboola.adform.masterdata_extractor.api_client.ClientException;
 import keboola.adform.masterdata_extractor.config.KBCConfig;
-import keboola.adform.masterdata_extractor.config.YamlConfigParser;
+import keboola.adform.masterdata_extractor.config.JsonConfigParser;
 import keboola.adform.masterdata_extractor.config.tableconfig.ManifestBuilder;
 import keboola.adform.masterdata_extractor.config.tableconfig.ManifestFile;
 import keboola.adform.masterdata_extractor.pojo.MasterFile;
@@ -52,7 +52,7 @@ public class Runner {
         //Parse config file
         try {
             if (confFile.exists() && !confFile.isDirectory()) {
-                config = YamlConfigParser.parseFile(confFile);
+                config = JsonConfigParser.parseFile(confFile);
             }
         } catch (Exception ex) {
             System.out.println("Failed to parse config file");
