@@ -52,18 +52,21 @@
 				"enum": [
 					"Click",
 					"Impression",
-					"Trackingpoint"
+					"Trackingpoint",
+					"Event"
 				],
 				"default": [
 					"Click",
 					"Impression",
-					"Trackingpoint"
+					"Trackingpoint",
+					"Event"
 				],
 				"options": {
 					"enum_titles": [
 						"Click",
 						"Impression",
-						"Trackingpoint"
+						"Trackingpoint",
+						"Event"
 					]
 				}
 			}
