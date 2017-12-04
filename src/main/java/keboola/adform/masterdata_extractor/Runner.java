@@ -13,8 +13,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import keboola.adform.masterdata_extractor.api_client.ClientException;
-import keboola.adform.masterdata_extractor.config.KBCConfig;
 import keboola.adform.masterdata_extractor.config.JsonConfigParser;
+import keboola.adform.masterdata_extractor.config.KBCConfig;
 import keboola.adform.masterdata_extractor.config.tableconfig.ManifestBuilder;
 import keboola.adform.masterdata_extractor.config.tableconfig.ManifestFile;
 import keboola.adform.masterdata_extractor.pojo.MasterFile;
@@ -33,6 +33,8 @@ public class Runner {
 	private static char DEFAULT_SEPARATOR = '\t';
 	private static char DEFAULT_ENCLOSURE = '"';
 	private static char DEFAULT_ESCAPE_CHAR = '\\';
+
+	private static final String MD_PRIMARY_KEY = "TransactionID";
 
     public static void main(String[] args) {
 
@@ -140,7 +142,7 @@ public class Runner {
 
                 /*Build manifest file*/               
                 try {
-                	buildManifestFile(resFileName,  config.getParams().getBucket(), outTablesPath, headerCols, true);
+                	buildManifestFile(resFileName,  config.getParams().getBucket(), outTablesPath, headerCols, new String[] {MD_PRIMARY_KEY}, true);
                 } catch (Exception ex1) {
                     System.out.println("Error writing manifest file." + ex1.getMessage());
                     System.err.println(ex1.getMessage());
@@ -176,7 +178,7 @@ public class Runner {
                     }
                     /*Build manifest file,not incremental*/
                     try {
-                    	buildManifestFile(resFileName, config.getParams().getBucket(), outTablesPath, null, false);
+                    	buildManifestFile(resFileName, config.getParams().getBucket(), outTablesPath, null, null, false);
                     } catch (Exception ex1) {
                         System.out.println("Error writing manifest file." + ex1.getMessage());
                         System.err.println(ex1.getMessage());
@@ -207,10 +209,10 @@ public class Runner {
         }
     }
 
-    private static void buildManifestFile(String resFileName, String destination, String outPath, String [] cols, boolean incremental) throws Exception {
+    private static void buildManifestFile(String resFileName, String destination, String outPath, String [] cols, String [] pkey, boolean incremental) throws Exception {
     	ManifestFile manFile = new ManifestFile.Builder(resFileName, destination + "." + resFileName)
 				.setIncrementalLoad(incremental).setDelimiter(String.valueOf(DEFAULT_SEPARATOR)).setEnclosure(String.valueOf(DEFAULT_ENCLOSURE))
-				.setColumns(cols).build();
+				.setColumns(cols).setPrimaryKey(pkey).build();
 		ManifestBuilder.buildManifestFile(manFile, outPath, resFileName + ".csv");	
     }
 
