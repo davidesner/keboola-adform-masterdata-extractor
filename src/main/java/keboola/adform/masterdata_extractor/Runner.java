@@ -118,7 +118,7 @@ public class Runner {
                 }
                 //sort from oldest
                 Collections.sort(filesSince, Collections.reverseOrder());
-                System.out.println("Downloading files with prefix: " + prefix);
+                System.out.println("Downloading files with prefix: " + prefix + " Since: " + c.getTime() + " Files found: " + filesSince.size());
                 String resFileFolder = outTablesPath + File.separator + prefix.toLowerCase() + ".csv";
                 List<MasterFile> downloadedFiles = ex.downloadAndUnzip(filesSince, resFileFolder);
 
