@@ -130,6 +130,7 @@ public class CsvUtils {
 			if (headers == null) {
 				throw new Exception("Error reading csv file header: " + csvFile.getName());
 			}
+			freader.close();
 		}
 		return headers;
 	}
