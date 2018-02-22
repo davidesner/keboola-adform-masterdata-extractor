@@ -13,7 +13,8 @@
 			"propertyOrder": 2000,
 			"title": "Password",
 			"type": "string",
-			"description": "AdForm password"
+			"description": "AdForm password",
+			"format": "password"
 		},
 		"mdListId": {
 			"propertyOrder": 3000,

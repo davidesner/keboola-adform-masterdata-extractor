@@ -35,7 +35,7 @@ public class Runner {
 	private static char DEFAULT_ENCLOSURE = '"';
 	private static char DEFAULT_ESCAPE_CHAR = '\\';
 
-	private static final String MD_PRIMARY_KEY = "TransactionID";
+	private static final String MD_PRIMARY_KEY = "TransactionId";
 
     public static void main(String[] args) {
 
