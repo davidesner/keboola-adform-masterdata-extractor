@@ -43,7 +43,7 @@
 		"srcCharset": {
 			"type": "string",
 			"propertyOrder": 4850,
-			"title": "File charset.",
+			"title": "File charset",
 			"description": "Determines the source file charset. All files will be converted to UTF-8.",
 			"enum": [
 				"IBM00858",

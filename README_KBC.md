@@ -42,6 +42,7 @@ The time has to be specified in the following format: *05-10-2015 21:00*. If not
  - **Output bucket** - (REQUIRED) name of the bucket in KBC. e.g. *in.c-main*
  - **Datasets** - (REQUIRED) list of datasets you want to retrieve. e.g. *[Impression, Click, Trackingpoint]* 
  - **Metadata** - (OPTIONAL) the list of metadata tables (prefixes) you want to retrieve. e.g. *[geolocations, campaigns]*
+ - **File charset** - Specify file encoding of the returned dataset. By default UTF-8, however it may vary in some cases. If specified incorrectly, the import to Storage will fail.
 
 ### Sample configuration
 Lets say we want to retrieve data from tables with prefixes *Impression, Click* and *Trackingpoint* within the interval *[08-10-2015 0:00, 12-10-2015 0:00)*.
