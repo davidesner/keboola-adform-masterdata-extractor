@@ -3,14 +3,15 @@
 package keboola.adform.masterdata_extractor.utils;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -32,48 +33,22 @@ public class CsvUtils {
 	 * @param csvFile
 	 * @throws IOException
 	 */
-	public static void removeHeaderFromCsv(File csvFile) throws Exception {
-		// create output file
+	public static void removeHeaderFromCsv(File csvFile, Charset charset) throws Exception {
 		File outFile = new File(csvFile.getParent() + File.separator + "tempRes");
-		FileChannel out = null;
-		FileOutputStream fout = null;
-		FileInputStream fis = null;
-		FileChannel in = null;
-		try {
-			// retrieve file header
-			fis = new FileInputStream(csvFile);
-
-			// read header
-			readLineWithNL(fis);
-
-			fout = new FileOutputStream(outFile);
-			out = fout.getChannel();
-			// Write the rest of the file using NIO
-			in = fis.getChannel();
-			// set position to header
-			long pos = in.position() - 1;
-			for (long p = pos, l = in.size(); p < l;) {
-				p += in.transferTo(p, l - p, out);
+		try (
+				InputStreamReader fr = new InputStreamReader( new FileInputStream(csvFile),charset);				
+				BufferedReader br = new BufferedReader(fr);
+				FileWriter fileStream = new FileWriter(outFile);
+				BufferedWriter out = new BufferedWriter(fileStream);
+			) {
+			String line;
+			br.readLine();
+			while ((line = br.readLine()) != null) {
+				out.write(line);
+				out.newLine();
 			}
-		} catch (Exception ex) {			
-			throw ex;
-		} finally {
-			try {
-				if (fis != null) {
-					fis.close();
-				}
-				if (fout != null) {
-					fout.close();
-				}
-				if (out != null) {
-					out.close();
-				}
-				if (in != null) {
-					in.close();
-				}
-			} catch (Exception ex) {
-				// do nothing.
-			}
+			out.close();
+			fileStream.close();
 		}
 
 		csvFile.delete();
@@ -144,9 +119,10 @@ public class CsvUtils {
 	}
 
 	public static String[] readHeader(File csvFile, char separator, char quotechar, char escape, boolean strictQuotes,
-			boolean ignoreLeadingWhiteSpace) throws Exception {
+			boolean ignoreLeadingWhiteSpace, Charset charset) throws Exception {
 		String[] headers = null;
-		try (FileReader freader = new FileReader(csvFile);
+		
+		try (InputStreamReader freader = new InputStreamReader( new FileInputStream(csvFile),charset);
 				CSVReader csvreader = new CSVReader(freader, separator, quotechar, escape, 0, strictQuotes,
 						ignoreLeadingWhiteSpace);) {
 

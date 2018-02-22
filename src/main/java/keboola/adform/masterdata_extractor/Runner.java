@@ -4,6 +4,7 @@ package keboola.adform.masterdata_extractor;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -134,7 +135,7 @@ public class Runner {
                 System.out.println("Preparing sliced tables...");
                 String[] headerCols = null;
 				try {
-					headerCols = prepareSlicedTables(downloadedFiles);
+					headerCols = prepareSlicedTables(downloadedFiles, config.getParams().getSrcCharset());
 				} catch (Exception e) {
 					System.err.println("Error processing files." + e.getMessage());
 					System.exit(2);
@@ -216,7 +217,7 @@ public class Runner {
 		ManifestBuilder.buildManifestFile(manFile, outPath, resFileName + ".csv");	
     }
 
-	private static String[] prepareSlicedTables(List<MasterFile> downloadedFiles) throws Exception {
+	private static String[] prepareSlicedTables(List<MasterFile> downloadedFiles, String charset) throws Exception {
 		List<File> files = new ArrayList<>();
 		for(MasterFile mf : downloadedFiles) {
 			files.add(new File(mf.getLocalAbsolutePath()));
@@ -224,10 +225,10 @@ public class Runner {
 		
 		// get colums
 				String[] headerCols = CsvUtils.readHeader(files.get(0),
-						DEFAULT_SEPARATOR, DEFAULT_ENCLOSURE, DEFAULT_ESCAPE_CHAR, false, false);
+						DEFAULT_SEPARATOR, DEFAULT_ENCLOSURE, DEFAULT_ESCAPE_CHAR, false, false, Charset.forName(charset));
 				// remove headers and create results
 				for (File mFile : files) {
-					CsvUtils.removeHeaderFromCsv(mFile);					
+					CsvUtils.removeHeaderFromCsv(mFile, Charset.forName(charset));					
 				}
 				//in case some files did not contain any data
 				CsvUtils.deleteEmptyFiles(files);				

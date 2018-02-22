@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -38,6 +40,8 @@ public class KBCParameters {
     private String dateTo;
     @JsonProperty("bucket")
     private String bucket;
+    @JsonProperty("srcCharset")
+    private String srcCharset;
     @JsonProperty("prefixes")
     private ArrayList<String> prefixes;
     @JsonProperty("metaFiles")
@@ -52,7 +56,7 @@ public class KBCParameters {
     public KBCParameters(@JsonProperty("user") String user, @JsonProperty("#pass") String pass,
     		 @JsonProperty("mdListId") String mdListId,
             @JsonProperty("mdListUrl") String mdListUrl, @JsonProperty("daysInterval") int daysInterval,
-            @JsonProperty("dateTo") String dateTo, @JsonProperty("bucket") String bucket,
+            @JsonProperty("dateTo") String dateTo, @JsonProperty("bucket") String bucket, @JsonProperty("srcCharset") String srcCharset,
             @JsonProperty("prefixes") ArrayList<String> prefixes, @JsonProperty("metaFiles") ArrayList<String> metaFiles) throws ParseException {
         parametersMap = new HashMap<String, Object>();
         this.user = user;
@@ -68,6 +72,7 @@ public class KBCParameters {
             setDate_to(dateTo);
         }
 
+        this.srcCharset = StringUtils.isEmpty(srcCharset) ? "UTF-8" : srcCharset;
         this.bucket = bucket;
         this.prefixes = prefixes;
         this.metaFiles = metaFiles;
@@ -178,6 +183,11 @@ public class KBCParameters {
 	public void setMdListId(String mdListId) {
 		this.mdListId = mdListId;
 	}
-    
+
+	public String getSrcCharset() {
+		return srcCharset;
+	}
+
+	
     
 }
