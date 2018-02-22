@@ -5,8 +5,8 @@ ENV APP_VERSION 1.1.5
 
 WORKDIR /home
 
-ENV MAVEN_OPTS="-Xmx256m -Xms256m -Xss100m -XX:MaxPermSize=128m"
-ENV JAVA_OPTS="-Xmx256m -Xms256m -Xss100m -XX:MaxPermSize=128m"
+ENV MAVEN_OPTS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
+ENV JAVA_OPTS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
 RUN git clone https://github.com/davidesner/keboola-adform-masterdata-extractor ./
 RUN mvn -q install
 
