@@ -6,6 +6,7 @@ import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -13,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author David Esner <esnerda at gmail.com>
  * @created 2015
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MasterFile implements Comparable<MasterFile> {
 
 	@JsonProperty("id")
