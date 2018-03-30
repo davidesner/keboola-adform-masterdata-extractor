@@ -8,24 +8,33 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.net.ssl.SSLException;
+
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpEntityEnclosingRequest;
+import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.HttpRequestRetryHandler;
+import org.apache.http.client.ServiceUnavailableRetryStrategy;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.http.protocol.HttpContext;
 import org.json.JSONObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,14 +52,18 @@ public class APIClient {
 
     private Exception apiException;
     private static final String BASE_URL = "https://api.adform.com";
+    //private static final String BASE_URL = "http://localhost:8888";
     private static final String LOGIN_URL_PATH = "/Services/Security/Login";
     private static final String MD_FILES_URL_PATH = "/v1/buyer/masterdata/files/";
     private static final String DOWNLOAD_F_URL_PATH = "/v1/buyer/masterdata/download/";
     private final String userName;
     private final String password;
     private final String masterDataListID;
-    private String AUTH_TICKET;
 	private BasicCookieStore cookieStore;
+	
+	private static final int MAX_RETRIES = 15;
+	private static final long RETRY_INTERVAL = 5000;
+	private static final int[] RETRY_STATUS_CODES = {504};
 
     public APIClient(String userName, String password, String masterDataListID) {
         this.userName = userName;
@@ -67,10 +80,10 @@ public class APIClient {
     }
 
     public void authenticate() throws ClientException {
-        try (CloseableHttpClient client = HttpClients.createDefault();){
+        try (CloseableHttpClient client = getHttpClient(null);){
             HttpPost httpPost = new HttpPost(BASE_URL + LOGIN_URL_PATH);
 
-            String credsJson = "{\"Username\":\"" + userName + "\",\"Password\":\"" + password + "\"}\"";
+            String credsJson = "{\"Username\":\"" + userName + "\",\"Password\":\"" + password + "\"}";
 
             StringEntity requestEntity = new StringEntity(
                     credsJson, "UTF-8");
@@ -127,8 +140,7 @@ public class APIClient {
             if (cookieStore == null) {
                 authenticate();
             }
-
-            HttpClient client = HttpClientBuilder.create().setDefaultCookieStore(getCookieStore()).build();
+            HttpClient client = getHttpClient(getCookieStore());
             
 
             HttpGet httpGet = new HttpGet(BASE_URL + MD_FILES_URL_PATH + masterDataListID);
@@ -178,7 +190,7 @@ public class APIClient {
     public boolean downloadFile(String fileId, String downloadPath, boolean lastRun) throws ClientException {
         try {
             FileOutputStream fos = null;
-            CloseableHttpClient client = HttpClientBuilder.create().setDefaultCookieStore(getCookieStore()).build();
+            CloseableHttpClient client = getHttpClient(getCookieStore());
             HttpGet httpget = new HttpGet(BASE_URL + DOWNLOAD_F_URL_PATH + masterDataListID + "/" + fileId);
             //disable redirects
             RequestConfig requestConfig = RequestConfig.custom().setRedirectsEnabled(false).build();
@@ -225,5 +237,63 @@ public class APIClient {
             setApiException(ex);
             return false;
         }
+    }
+
+	private CloseableHttpClient getHttpClient(BasicCookieStore cookieStore) {
+		HttpClientBuilder builder = HttpClientBuilder.create()
+				.setRetryHandler(getRetryHandler(MAX_RETRIES)).setServiceUnavailableRetryStrategy(
+						getServiceUnavailableRetryStrategy(MAX_RETRIES, RETRY_STATUS_CODES));
+		if (cookieStore != null) {
+			builder = builder.setDefaultCookieStore(cookieStore);
+		}
+		return builder.build();
+	}
+
+    private HttpRequestRetryHandler getRetryHandler(int maxRetryCount){
+        return (exception, executionCount, context) -> {
+
+            System.out.println("Retrying for: " + executionCount + ". time");
+
+            if (executionCount >= maxRetryCount) {
+                // Do not retry if over max retry count
+                return false;
+            }
+            if (exception instanceof InterruptedIOException) {
+                // Timeout
+            	return true;
+            }
+            if (exception instanceof UnknownHostException) {
+                // Unknown host
+                return false;
+            }
+            if (exception instanceof SSLException) {
+                // SSL handshake exception
+                return false;
+            }
+            HttpClientContext clientContext = HttpClientContext.adapt(context);
+            HttpRequest request = clientContext.getRequest();
+            boolean idempotent = !(request instanceof HttpEntityEnclosingRequest);
+            if (idempotent) {
+                // Retry if the request is considered idempotent
+                return true;
+            }
+            return false;
+        };
+    }
+    
+    private ServiceUnavailableRetryStrategy getServiceUnavailableRetryStrategy(final int maxRetryCount, int[] allowedCodes){
+    	return new ServiceUnavailableRetryStrategy() {
+            @Override
+            public boolean retryRequest(
+                    final HttpResponse response, final int executionCount, final HttpContext context) {
+                int statusCode = response.getStatusLine().getStatusCode();
+                return Arrays.stream(allowedCodes).anyMatch(i -> i==statusCode) && executionCount < maxRetryCount;
+            }
+
+            @Override
+            public long getRetryInterval() {
+                return RETRY_INTERVAL;
+            }
+        };
     }
 }
