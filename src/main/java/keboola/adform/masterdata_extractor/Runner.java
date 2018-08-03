@@ -3,6 +3,7 @@
 package keboola.adform.masterdata_extractor;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -20,6 +21,7 @@ import keboola.adform.masterdata_extractor.config.tableconfig.ManifestFile;
 import keboola.adform.masterdata_extractor.pojo.MasterFile;
 import keboola.adform.masterdata_extractor.pojo.MasterFileList;
 import keboola.adform.masterdata_extractor.utils.CsvUtils;
+import keboola.adform.masterdata_extractor.utils.FileHandler;
 import keboola.adform.masterdata_extractor.utils.JsonToCsvConvertor;
 
 /**
@@ -192,22 +194,33 @@ public class Runner {
             	log.warn(metaF + " metadata file does not exist in the source!");
             	continue;
             }
+            boolean notEmpty = false;
             try {
                 System.out.println("Converting meta file: " + metaF + " to CSV");
-                conv.convert(dataPath + File.separator + metaF + ".json", outTablesPath + File.separator + resFileName + ".csv");
+                notEmpty = conv.convert(dataPath + File.separator + metaF + ".json", outTablesPath + File.separator + resFileName + ".csv");
             } catch (Exception ex1) {
                 System.out.print("Error converting meta data file to csv.");
                 System.err.print(ex1.getMessage());
                 System.exit(1);
             }
             /*Build manifest file,not incremental*/
-            try {
-            	buildManifestFile(resFileName, config.getParams().getBucket(), outTablesPath, null, null, false);
-            } catch (Exception ex1) {
-                System.out.println("Error writing manifest file." + ex1.getMessage());
-                System.err.println(ex1.getMessage());
-                System.exit(2);
+            if (notEmpty){
+	            try {
+	            	buildManifestFile(resFileName, config.getParams().getBucket(), outTablesPath, null, null, false);
+	            } catch (Exception ex1) {
+	                System.out.println("Error writing manifest file." + ex1.getMessage());
+	                System.err.println(ex1.getMessage());
+	                System.exit(2);
+	            }
             }
+        }
+        //delete temp files
+        for (MasterFile file : metaFiles) {
+        	try {
+				FileHandler.deleteFile(file.getLocalAbsolutePath());
+			} catch (IOException e) {
+				log.warn("Error deleting original metafile.", e);
+			}
         }
        return true;
     }

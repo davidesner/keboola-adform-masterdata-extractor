@@ -53,7 +53,7 @@ public class JsonToCsvConvertor {
      * @param destPath path of the destination csv file
      * @throws Exception
      */
-    public void convert(String sourcePath, String destPath) throws Exception {
+    public boolean convert(String sourcePath, String destPath) throws Exception {
 
         File source = new File(sourcePath);
         if (!source.exists()) {
@@ -85,6 +85,13 @@ public class JsonToCsvConvertor {
             //retrieve all headers
             Map<String, String> lineData = getAllHeaders(source);
 
+            // check if file is empty
+            if( currentToken == JsonToken.END_ARRAY) {
+            	writer.close();
+            	FileHandler.deleteFile(destPath);
+            	return false;
+            }
+            
             // For each of the records in the array
             int line = 1;
             while (currentToken != JsonToken.END_ARRAY) {
@@ -125,6 +132,7 @@ public class JsonToCsvConvertor {
             }
 
         }
+        return true;
 
     }
 
