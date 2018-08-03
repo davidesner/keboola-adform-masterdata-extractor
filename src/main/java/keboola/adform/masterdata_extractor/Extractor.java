@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,9 +37,12 @@ public class Extractor {
     }
 
     public List<MasterFile> downloadAndUnzip(List<MasterFile> fileList, String folderPath) throws ExtractorException {
-        //download files
-
-        downloadFiles(fileList, folderPath);
+        
+    	 if(fileList.isEmpty()) {
+    		 return Collections.emptyList();
+    	 }
+    	//download files
+    	downloadFiles(fileList, folderPath);
 
         List<String> rawFilePaths;
         //unzip archives and delete data
@@ -97,6 +101,7 @@ public class Extractor {
                         ze = zis.getNextEntry();
 
                         file.setLocalAbsolutePath(newFile.getAbsolutePath());
+                        file.setName(fileName);
                         downFiles.add(new MasterFile(file));
 
                     }

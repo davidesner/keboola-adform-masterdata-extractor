@@ -3,15 +3,14 @@
 package keboola.adform.masterdata_extractor;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 import keboola.adform.masterdata_extractor.api_client.ClientException;
 import keboola.adform.masterdata_extractor.config.JsonConfigParser;
@@ -21,7 +20,6 @@ import keboola.adform.masterdata_extractor.config.tableconfig.ManifestFile;
 import keboola.adform.masterdata_extractor.pojo.MasterFile;
 import keboola.adform.masterdata_extractor.pojo.MasterFileList;
 import keboola.adform.masterdata_extractor.utils.CsvUtils;
-import keboola.adform.masterdata_extractor.utils.FileHandler;
 import keboola.adform.masterdata_extractor.utils.JsonToCsvConvertor;
 
 /**
@@ -36,9 +34,11 @@ public class Runner {
 	private static char DEFAULT_ESCAPE_CHAR = '\\';
 
 	private static final String MD_PRIMARY_KEY = "TransactionId";
+	final static Logger log = Logger.getLogger(Runner.class);
 
     public static void main(String[] args) {
 
+    	printEnvStats();
         if (args.length == 0) {
             System.out.print("No parameters provided.");
             System.exit(1);
@@ -74,7 +74,6 @@ public class Runner {
             //authenticate, get session token
             ex.client.authenticate();
         } catch (ClientException ex1) {
-            Logger.getLogger(Runner.class.getName()).log(Level.SEVERE, null, ex1);
             System.out.println("Error authenticating connection to API.");
             System.err.println(ex1.getMessage());
             System.exit(2);
@@ -85,7 +84,6 @@ public class Runner {
         try {
             fileList = ex.client.retrieveFileList();
         } catch (Exception ex1) {
-            Logger.getLogger(Runner.class.getName()).log(Level.SEVERE, null, ex1);
             System.out.println("Error retrieving list of masterdata files.");
             System.err.println(ex1.getMessage());
             System.exit(2);
@@ -115,6 +113,7 @@ public class Runner {
                     filesSince = fileList.getFilesSince(startInterval, prefix);
                 }
                 if (filesSince.isEmpty()) {
+                	log.warn("No new files found for " + prefix);
                     continue;
                 }
                 //sort from oldest
@@ -163,36 +162,9 @@ public class Runner {
                     filesSince = fileList.getFilesSince(startInterval, "meta");
                 }
                 List<MasterFile> metaFiles = ex.downloadAndUnzip(filesSince, dataPath);
-                              List<String> metaFilesIds = new ArrayList<String>();
-               
-                /*Convert from JSON to csv*/
-                JsonToCsvConvertor conv = new JsonToCsvConvertor();
-                for (String metaF : config.getParams().getMetaFiles()) {
-                    String resFileName = "meta-" + metaF;
-                    try {
-                        System.out.println("Converting meta file: " + metaF + " to CSV");
-                        conv.convert(dataPath + File.separator + metaF + ".json", outTablesPath + File.separator + resFileName + ".csv");
-                    } catch (Exception ex1) {
-                        System.out.print("Error converting meta data file to csv.");
-                        System.err.print(ex1.getMessage());
-                        System.exit(1);
-                    }
-                    /*Build manifest file,not incremental*/
-                    try {
-                    	buildManifestFile(resFileName, config.getParams().getBucket(), outTablesPath, null, null, false);
-                    } catch (Exception ex1) {
-                        System.out.println("Error writing manifest file." + ex1.getMessage());
-                        System.err.println(ex1.getMessage());
-                        System.exit(2);
-                    }
-                }
-                dataExtracted = true;
-                /*delete original JSON files*/
-                try {
-                    FileHandler.deleteFiles(metaFilesIds);
-                } catch (IOException ex1) {
-                    System.out.println("Error deleting original meta files. " + ex1.getMessage());
-                }
+                
+                dataExtracted = processMetaDataFiles(metaFiles, config, dataPath, outTablesPath);
+                
             }
             if (dataExtracted && i > 0) {
                 System.out.println("Files extracted successfully..");
@@ -203,13 +175,45 @@ public class Runner {
             }
             System.exit(0);
         } catch (ExtractorException ex1) {
-            Logger.getLogger(Runner.class.getName()).log(Level.SEVERE, null, ex1);
             System.out.print("Error extracting data.");
             System.err.print(ex1.getMessage());
             System.exit(ex1.getSeverity());
         }
     }
 
+    private static boolean processMetaDataFiles(List<MasterFile> metaFiles, KBCConfig config, String dataPath, String outTablesPath) {
+    	if (metaFiles.isEmpty()) {
+        	log.warn("No new metadata were retrieved!");
+    		return false;
+    	}        
+        /*Convert from JSON to csv*/
+        JsonToCsvConvertor conv = new JsonToCsvConvertor();
+        for (String metaF : config.getParams().getMetaFiles()) {
+            String resFileName = "meta-" + metaF;
+            File jsonFile = new File(dataPath + File.separator + metaF + ".json");
+            if (!jsonFile.exists()) {
+            	log.warn(metaF + " metadata file does not exist in the source!");
+            	continue;
+            }
+            try {
+                System.out.println("Converting meta file: " + metaF + " to CSV");
+                conv.convert(dataPath + File.separator + metaF + ".json", outTablesPath + File.separator + resFileName + ".csv");
+            } catch (Exception ex1) {
+                System.out.print("Error converting meta data file to csv.");
+                System.err.print(ex1.getMessage());
+                System.exit(1);
+            }
+            /*Build manifest file,not incremental*/
+            try {
+            	buildManifestFile(resFileName, config.getParams().getBucket(), outTablesPath, null, null, false);
+            } catch (Exception ex1) {
+                System.out.println("Error writing manifest file." + ex1.getMessage());
+                System.err.println(ex1.getMessage());
+                System.exit(2);
+            }
+        }
+       return true;
+    }
     private static void buildManifestFile(String resFileName, String destination, String outPath, String [] cols, String [] pkey, boolean incremental) throws Exception {
     	ManifestFile manFile = new ManifestFile.Builder(resFileName, destination + "." + resFileName)
 				.setIncrementalLoad(incremental).setDelimiter(String.valueOf(DEFAULT_SEPARATOR)).setEnclosure(String.valueOf(DEFAULT_ENCLOSURE))
@@ -234,5 +238,20 @@ public class Runner {
 				CsvUtils.deleteEmptyFiles(files);				
 				return headerCols;
 		
+	}
+
+	private static void printEnvStats() {
+		// Get current size of heap in bytes
+		long heapSize = Runtime.getRuntime().totalMemory(); 
+
+		// Get maximum size of heap in bytes. The heap cannot grow beyond this size.// Any attempt will result in an OutOfMemoryException.
+		long heapMaxSize = Runtime.getRuntime().maxMemory();
+
+		 // Get amount of free memory within the heap in bytes. This size will increase // after garbage collection and decrease as new objects are created.
+		long heapFreeSize = Runtime.getRuntime().freeMemory();
+		
+		log.info("Initial Heap size (MB): " + heapSize/1000000);
+		log.info("Max Heap size (MB): " + heapMaxSize/1000000);
+		log.info("Initial free memory (MB): " + heapFreeSize/1000000);		
 	}
 }
