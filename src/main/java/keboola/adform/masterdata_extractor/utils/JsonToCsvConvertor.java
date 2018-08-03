@@ -2,12 +2,6 @@
  */
 package keboola.adform.masterdata_extractor.utils;
 
-import au.com.bytecode.opencsv.CSVWriter;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.MappingJsonFactory;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,6 +14,14 @@ import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MappingJsonFactory;
+
+import au.com.bytecode.opencsv.CSVWriter;
 
 /**
  * Convertor from JSON to CSV files.
@@ -63,7 +65,7 @@ public class JsonToCsvConvertor {
         FileOutputStream fos = new FileOutputStream(destPath);
 
         try {
-            writer = new CSVWriter(new OutputStreamWriter(fos, Charset.forName("UTF-8")), this.SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER);
+            writer = new CSVWriter(new OutputStreamWriter(fos, Charset.forName("UTF-8")), this.SEPARATOR, CSVWriter.DEFAULT_QUOTE_CHARACTER);
 
             JsonFactory f = new MappingJsonFactory();
             fis = new FileInputStream(source);
