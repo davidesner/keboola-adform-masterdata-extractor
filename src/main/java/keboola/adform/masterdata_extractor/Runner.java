@@ -156,11 +156,8 @@ public class Runner {
             if (config.hasMeta()) {
                 System.out.println("Downloading meta files");          
                 List<MasterFile> filesSince = null;
-                if (config.getParams().getDate_to() != null) {
-                    filesSince = fileList.getFilesSince(startInterval, config.getParams().getDate_to(), "meta");
-                } else {
-                    filesSince = fileList.getFilesSince(startInterval, "meta");
-                }
+                filesSince = fileList.getFilesByPrefix("meta");
+
                 List<MasterFile> metaFiles = ex.downloadAndUnzip(filesSince, dataPath);
                 
                 dataExtracted = processMetaDataFiles(metaFiles, config, dataPath, outTablesPath);

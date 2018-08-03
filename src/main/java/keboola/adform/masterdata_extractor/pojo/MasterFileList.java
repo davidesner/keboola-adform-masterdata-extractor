@@ -82,6 +82,23 @@ public class MasterFileList {
     }
 
     /**
+     * Returns sublist of files with given prefix
+     * 
+     * @param filePrefix
+     * @return
+     */
+    public List<MasterFile> getFilesByPrefix( String filePrefix) {
+
+    	try {
+    		return getSublistByPrefix(filePrefix, files);
+    		
+    	} catch (Exception ex) {
+    		System.err.println(ex.getMessage());
+    		return null;
+    	}
+    }
+
+    /**
      * Retrieves sublist of files matching given prefix. (Case sensitive)
      *
      * @param prefix - searched prefix
