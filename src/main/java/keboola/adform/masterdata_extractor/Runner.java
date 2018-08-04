@@ -10,6 +10,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.apache.log4j.Logger;
 
@@ -92,15 +93,17 @@ public class Runner {
         }
 
         //download files in specified interval
-        Calendar c = Calendar.getInstance();
+        Calendar c = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         Date startInterval = null;
         if (config.getParams().getDate_to() != null) {
             c.setTime(config.getParams().getDate_to());
             c.add(Calendar.DATE, -config.getParams().getDaysInterval());
+            c.add(Calendar.HOUR, -config.getParams().getHoursInterval());
             startInterval = c.getTime();
 
         } else {
             c.add(Calendar.DATE, -config.getParams().getDaysInterval());
+            c.add(Calendar.HOUR, -config.getParams().getHoursInterval());
             startInterval = c.getTime();
 
         }
@@ -158,17 +161,25 @@ public class Runner {
             if (config.hasMeta()) {
                 System.out.println("Downloading meta files");          
                 List<MasterFile> filesSince = null;
-                filesSince = fileList.getFilesByPrefix("meta");
+				if (config.getParams().isAlwaysGetMeta()) {
+					filesSince = fileList.getFilesByPrefix("meta");
+				} else if (config.getParams().getDate_to() != null) {
+					filesSince = fileList.getFilesSince(startInterval, config.getParams().getDate_to(), "meta");
+				} else {
+					filesSince = fileList.getFilesSince(startInterval, "meta");
+				}
+                
 
                 List<MasterFile> metaFiles = ex.downloadAndUnzip(filesSince, dataPath);
                 
                 dataExtracted = processMetaDataFiles(metaFiles, config, dataPath, outTablesPath);
                 
             }
+
             if (dataExtracted && i > 0) {
                 System.out.println("Files extracted successfully..");
             } else if (!dataExtracted) {
-                System.out.println("Proccess finished successfully but no files were extracted. Check configuration parameters.");
+                System.out.println("Proccess finished successfully but no meta files were extracted. Check configuration parameters.");
             } else {
                 System.out.println("Proccess finished successfully but only metadata tables were extracted. Check configuration parameters.");
             }

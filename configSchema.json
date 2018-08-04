@@ -11,7 +11,9 @@
 		"bucket",
 		"prefixes",
 		"metaFiles",
-		"srcCharset"
+		"srcCharset",
+		"hoursInterval",
+		"alwaysGetMeta"
 	],
 	"properties": {
 		"user": {
@@ -36,7 +38,7 @@
 		"dateTo": {
 			"type": "string",
 			"title": "Date To",
-			"description": "[Optional] Top boundary of the date interval. If not specified, current date is considered. Format: dd-mm-yyyy hh:mm ",
+			"description": "[Optional] Top boundary of the date interval. If not specified, current date is considered. Format: dd-mm-yyyy hh:mm [UTC]",
 			"propertyOrder": 4500
 		},
 		"mdListId": {
@@ -218,6 +220,20 @@
 			"default": 1,
 			"description": "Number of days since current date specifiing the interval of retrieved data.",
 			"propertyOrder": 4000
-		}
+		},
+		"hoursInterval": {
+			"type": "number",
+			"title": "Hours interval",
+			"default": 0,
+			"description": "Number of hours since current date specifiing the interval of retrieved data. Combine with `days interval` parameter.",
+			"propertyOrder": 5000
+		},
+		"alwaysGetMeta": {
+						"type": "boolean",
+						"title": "Always get meta files.",
+						"default": true,
+						"description": "If set to true, meta data will be always retrieved. If set to false, the specified `since` interval will be used, i.e. only recently updated metadata will be fetched.",
+						"propertyOrder": 6000
+					}
 	}
 }

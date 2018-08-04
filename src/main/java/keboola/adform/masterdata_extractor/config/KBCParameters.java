@@ -35,6 +35,12 @@ public class KBCParameters {
 
     @JsonProperty("daysInterval")
     private int daysInterval;
+    @JsonProperty("hoursInterval")
+    private int hoursInterval;
+
+    @JsonProperty("alwaysGetMeta")
+    private boolean alwaysGetMeta;
+    
     //end date of fetched interval in format: 05-10-2015 21:00
     @JsonProperty("dateTo")
     private String dateTo;
@@ -57,7 +63,8 @@ public class KBCParameters {
     		 @JsonProperty("mdListId") String mdListId,
             @JsonProperty("mdListUrl") String mdListUrl, @JsonProperty("daysInterval") int daysInterval,
             @JsonProperty("dateTo") String dateTo, @JsonProperty("bucket") String bucket, @JsonProperty("srcCharset") String srcCharset,
-            @JsonProperty("prefixes") ArrayList<String> prefixes, @JsonProperty("metaFiles") ArrayList<String> metaFiles) throws ParseException {
+            @JsonProperty("prefixes") ArrayList<String> prefixes, @JsonProperty("metaFiles") ArrayList<String> metaFiles,
+            @JsonProperty("hoursInterval") Integer hoursInterval, @JsonProperty("alwaysGetMeta") boolean alwaysGetMeta) throws ParseException {
         parametersMap = new HashMap<String, Object>();
         this.user = user;
         this.pass = pass;
@@ -67,11 +74,13 @@ public class KBCParameters {
         	this.mdListId = mdListUrl.substring(mdListUrl.lastIndexOf("/") + 1);
         }
         this.daysInterval = daysInterval;
+        this.hoursInterval = hoursInterval;
         this.dateTo = !"".equals(dateTo) ? dateTo : null;
         if (this.dateTo != null) {
             setDate_to(dateTo);
         }
 
+        this.alwaysGetMeta = alwaysGetMeta;
         this.srcCharset = StringUtils.isEmpty(srcCharset) ? "UTF-8" : srcCharset;
         this.bucket = bucket;
         this.prefixes = prefixes;
@@ -187,6 +196,16 @@ public class KBCParameters {
 	public String getSrcCharset() {
 		return srcCharset;
 	}
+
+	public int getHoursInterval() {
+		return hoursInterval;
+	}
+
+	public boolean isAlwaysGetMeta() {
+		return alwaysGetMeta;
+	}
+	
+	
 
 	
     
