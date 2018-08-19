@@ -33,13 +33,13 @@
 			"type": "string",
 			"title": "Output bucket",
 			"description": "Result Storage bucket path.",
-			"propertyOrder": 4800
+			"propertyOrder": 3500
 		},
 		"dateTo": {
 			"type": "string",
 			"title": "Date To",
 			"description": "[Optional] Top boundary of the date interval. If not specified, current date is considered. Format: dd-mm-yyyy hh:mm [UTC]",
-			"propertyOrder": 4500
+			"propertyOrder": 4800
 		},
 		"mdListId": {
 			"type": "string",
@@ -212,7 +212,7 @@
 			"title": "File charset",
 			"default": "UTF-8",
 			"description": "Determines the datasets file charset. By default UTF-8, however it may vary in some cases. If specified incorrectly, the import to Storage will fail.",
-			"propertyOrder": 4850
+			"propertyOrder": 5250
 		},
 		"daysInterval": {
 			"type": "number",
@@ -226,14 +226,14 @@
 			"title": "Hours interval",
 			"default": 0,
 			"description": "Number of hours since current date specifiing the interval of retrieved data. Combine with `days interval` parameter.",
-			"propertyOrder": 5000
+			"propertyOrder": 4200
 		},
 		"alwaysGetMeta": {
 						"type": "boolean",
 						"title": "Always get meta files.",
 						"default": true,
 						"description": "If set to true, meta data will be always retrieved. If set to false, the specified `since` interval will be used, i.e. only recently updated metadata will be fetched.",
-						"propertyOrder": 6000
+						"propertyOrder": 6500
 					}
 	}
 }

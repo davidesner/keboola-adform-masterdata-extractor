@@ -13,6 +13,8 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -20,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author David Esner <esnerda at gmail.com>
  * @created 2015
  */
+@JsonInclude(Include.NON_DEFAULT)
 public class KBCParameters {
 
     private final static String[] REQUIRED_FIELDS = {"user", "pass", "mdListId", "bucket", "prefixes", "daysInterval"};
@@ -36,7 +39,7 @@ public class KBCParameters {
     @JsonProperty("daysInterval")
     private int daysInterval;
     @JsonProperty("hoursInterval")
-    private int hoursInterval;
+    private Integer hoursInterval;
 
     @JsonProperty("alwaysGetMeta")
     private boolean alwaysGetMeta;
@@ -74,7 +77,7 @@ public class KBCParameters {
         	this.mdListId = mdListUrl.substring(mdListUrl.lastIndexOf("/") + 1);
         }
         this.daysInterval = daysInterval;
-        this.hoursInterval = hoursInterval;
+        this.hoursInterval = hoursInterval == null ? 0 : hoursInterval;
         this.dateTo = !"".equals(dateTo) ? dateTo : null;
         if (this.dateTo != null) {
             setDate_to(dateTo);
@@ -198,7 +201,7 @@ public class KBCParameters {
 	}
 
 	public int getHoursInterval() {
-		return hoursInterval;
+		return hoursInterval == null ? 0 : hoursInterval;
 	}
 
 	public boolean isAlwaysGetMeta() {
