@@ -79,7 +79,7 @@ public class Runner {
         } catch (ClientException ex1) {
             System.out.println("Error authenticating connection to API.");
             System.err.println(ex1.getMessage());
-            System.exit(2);
+            System.exit(1);
         }
 
         //get list of files
@@ -89,7 +89,7 @@ public class Runner {
         } catch (Exception ex1) {
             System.out.println("Error retrieving list of masterdata files.");
             System.err.println(ex1.getMessage());
-            System.exit(2);
+            System.exit(1);
         }
 
         //download files in specified interval
