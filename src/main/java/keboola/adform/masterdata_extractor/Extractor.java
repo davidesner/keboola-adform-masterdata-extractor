@@ -9,11 +9,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import org.apache.log4j.Logger;
 
 import keboola.adform.masterdata_extractor.api_client.APIClient;
 import keboola.adform.masterdata_extractor.api_client.ClientException;
@@ -27,13 +27,16 @@ import keboola.adform.masterdata_extractor.utils.FileHandler;
  */
 public class Extractor {
 
-    public final APIClient client;
-    private final static long BACKOFF_INTERVAL = 500;
+	public final APIClient client;
+    private final Logger logger;
+
+	private final static long BACKOFF_INTERVAL = 500;
     private final static int RETRIES = 5;
 
-    public Extractor(String userName, String password, String masterDataListUrl) {
+    public Extractor(String userName, String password, String masterDataListUrl, Logger log) {
         //init client
-        this.client = new APIClient(userName, password, masterDataListUrl);
+    	this.logger = log;
+        this.client = new APIClient(userName, password, masterDataListUrl, log);
     }
 
     public List<MasterFile> downloadAndUnzip(List<MasterFile> fileList, String folderPath) throws ExtractorException {
@@ -51,7 +54,7 @@ public class Extractor {
         try {
             FileHandler.deleteFile(folderPath + File.separator + fileList.get(0).getPrefix());
         } catch (IOException ex) {
-            Logger.getLogger(Extractor.class.getName()).log(Level.SEVERE, null, ex);
+            logger.error(null, ex);
         }
         return exFiles;
 
@@ -163,7 +166,7 @@ public class Extractor {
                     Thread.sleep(BACKOFF_INTERVAL * r);
 
                 } catch (InterruptedException ex) {
-                    Logger.getLogger(Extractor.class.getName()).log(Level.SEVERE, null, ex);
+                    logger.error(null, ex);
                 }
                 r++;
 

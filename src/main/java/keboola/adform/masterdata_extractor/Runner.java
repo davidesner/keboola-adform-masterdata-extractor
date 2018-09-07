@@ -72,7 +72,7 @@ public class Runner {
             System.exit(1);
         }
         boolean dataExtracted = false;
-        Extractor ex = new Extractor(config.getParams().getUser(), config.getParams().getPass(), config.getParams().getMdListId());      
+        Extractor ex = new Extractor(config.getParams().getUser(), config.getParams().getPass(), config.getParams().getMdListId(), log);      
         try {
             //authenticate, get session token
             ex.client.authenticate();

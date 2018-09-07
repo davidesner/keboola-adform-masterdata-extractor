@@ -11,8 +11,6 @@ import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.net.ssl.SSLException;
 
@@ -35,11 +33,11 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.protocol.HttpContext;
+import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import keboola.adform.masterdata_extractor.Extractor;
 import keboola.adform.masterdata_extractor.pojo.MasterFile;
 import keboola.adform.masterdata_extractor.pojo.MasterFileList;
 
@@ -59,16 +57,18 @@ public class APIClient {
     private final String userName;
     private final String password;
     private final String masterDataListID;
+    private final Logger logger;
 	private BasicCookieStore cookieStore;
 	
 	private static final int MAX_RETRIES = 15;
 	private static final long RETRY_INTERVAL = 5000;
 	private static final int[] RETRY_STATUS_CODES = {504};
 
-    public APIClient(String userName, String password, String masterDataListID) {
+    public APIClient(String userName, String password, String masterDataListID, Logger log) {
         this.userName = userName;
         this.password = password;
         this.masterDataListID = masterDataListID;
+        this.logger = log;
     }
 
     public Exception getApiException() {
@@ -113,8 +113,7 @@ public class APIClient {
             
             response.close();
         } catch (IOException ex) {
-            Logger.getLogger(Extractor.class
-                    .getName()).log(Level.SEVERE, null, ex);
+            throw new ClientException("Authentication failed! " + ex.getMessage());
         }
     }
 
@@ -172,7 +171,7 @@ public class APIClient {
             MasterFile[] files = mapper.readValue(result.toString(), MasterFile[].class);            
             return new MasterFileList(Arrays.asList(files));
         } catch (IOException ex) {		
-            Logger.getLogger(Extractor.class.getName()).log(Level.SEVERE, null, ex);
+            logger.error("retrieveFileList ERROR! " + ex.getMessage(), ex);
             return null;
         }
 
@@ -252,7 +251,7 @@ public class APIClient {
     private HttpRequestRetryHandler getRetryHandler(int maxRetryCount){
         return (exception, executionCount, context) -> {
 
-            System.out.println("Retrying for: " + executionCount + ". time");
+            logger.warn("Retrying for: " + executionCount + ". time");
 
             if (executionCount >= maxRetryCount) {
                 // Do not retry if over max retry count
@@ -287,6 +286,9 @@ public class APIClient {
             public boolean retryRequest(
                     final HttpResponse response, final int executionCount, final HttpContext context) {
                 int statusCode = response.getStatusLine().getStatusCode();
+                String urlPath = context.getAttribute("http.request").toString();
+                urlPath = urlPath.substring(0, urlPath.indexOf("["));
+                logger.warn(urlPath + " returned " + response.getStatusLine() + " Retrying for: " + executionCount + ". time");
                 return Arrays.stream(allowedCodes).anyMatch(i -> i==statusCode) && executionCount < maxRetryCount;
             }
 
