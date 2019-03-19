@@ -63,6 +63,7 @@ public class APIClient {
 	private static final int MAX_RETRIES = 15;
 	private static final long RETRY_INTERVAL = 5000;
 	private static final int[] RETRY_STATUS_CODES = {504};
+	private static final int MAX_REQ_TIMEOUT = 60;
 
     public APIClient(String userName, String password, String masterDataListID, Logger log) {
         this.userName = userName;
@@ -239,7 +240,11 @@ public class APIClient {
     }
 
 	private CloseableHttpClient getHttpClient(BasicCookieStore cookieStore) {
-		HttpClientBuilder builder = HttpClientBuilder.create()
+		RequestConfig config = RequestConfig.custom().setConnectTimeout(MAX_REQ_TIMEOUT * 1000)
+				.setConnectionRequestTimeout(MAX_REQ_TIMEOUT * 1000)
+				.setSocketTimeout(MAX_REQ_TIMEOUT * 1000).build();
+
+		HttpClientBuilder builder = HttpClientBuilder.create().setDefaultRequestConfig(config)
 				.setRetryHandler(getRetryHandler(MAX_RETRIES)).setServiceUnavailableRetryStrategy(
 						getServiceUnavailableRetryStrategy(MAX_RETRIES, RETRY_STATUS_CODES));
 		if (cookieStore != null) {
