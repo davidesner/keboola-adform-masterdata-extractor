@@ -62,7 +62,7 @@ public class APIClient {
 	
 	private static final int MAX_RETRIES = 15;
 	private static final long RETRY_INTERVAL = 5000;
-	private static final int[] RETRY_STATUS_CODES = {504};
+	private static final int[] RETRY_STATUS_CODES = {500, 501, 502, 503, 504};
 	private static final int MAX_REQ_TIMEOUT = 60;
 
     public APIClient(String userName, String password, String masterDataListID, Logger log) {
@@ -291,10 +291,14 @@ public class APIClient {
             public boolean retryRequest(
                     final HttpResponse response, final int executionCount, final HttpContext context) {
                 int statusCode = response.getStatusLine().getStatusCode();
+                if (statusCode < 300) {
+                	return false;
+                }
                 String urlPath = context.getAttribute("http.request").toString();
                 urlPath = urlPath.substring(0, urlPath.indexOf("["));
                 logger.warn(urlPath + " returned " + response.getStatusLine() + " Retrying for: " + executionCount + ". time");
-                return Arrays.stream(allowedCodes).anyMatch(i -> i==statusCode) && executionCount < maxRetryCount;
+                boolean isRetriable = Arrays.stream(allowedCodes).anyMatch(i -> i==statusCode);
+                return isRetriable && executionCount < maxRetryCount;
             }
 
             @Override
