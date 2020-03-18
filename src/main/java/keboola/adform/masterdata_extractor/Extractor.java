@@ -13,7 +13,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import keboola.adform.masterdata_extractor.api_client.APIClient;
 import keboola.adform.masterdata_extractor.api_client.ClientException;
@@ -54,7 +54,7 @@ public class Extractor {
         try {
             FileHandler.deleteFile(folderPath + File.separator + fileList.get(0).getPrefix());
         } catch (IOException ex) {
-            logger.error(null, ex);
+            logger.error(ex.getMessage(), ex);
         }
         return exFiles;
 
@@ -166,7 +166,7 @@ public class Extractor {
                     Thread.sleep(BACKOFF_INTERVAL * r);
 
                 } catch (InterruptedException ex) {
-                    logger.error(null, ex);
+                    logger.error(ex.getMessage(), ex);
                 }
                 r++;
 
