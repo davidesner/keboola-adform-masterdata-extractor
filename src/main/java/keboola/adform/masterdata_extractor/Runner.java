@@ -149,7 +149,7 @@ public class Runner {
                 /*Build manifest file*/               
                 try {
                 	String[] pkey = null;
-                	if (config.getParams().isOverridePkey()) {
+                	if (!config.getParams().isOverridePkey()) {
                 		pkey = new String[] {MD_PRIMARY_KEY};
                 	}
                 	buildManifestFile(resFileName,  config.getParams().getBucket(), outTablesPath, headerCols, pkey, true);
