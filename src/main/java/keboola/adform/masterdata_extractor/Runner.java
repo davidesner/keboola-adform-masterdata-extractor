@@ -12,7 +12,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import keboola.adform.masterdata_extractor.api_client.ClientException;
 import keboola.adform.masterdata_extractor.config.JsonConfigParser;
@@ -37,7 +38,7 @@ public class Runner {
 	private static char DEFAULT_ESCAPE_CHAR = '\\';
 
 	private static final String MD_PRIMARY_KEY = "TransactionId";
-	final static Logger log = Logger.getLogger(Runner.class);
+	final static Logger log = LogManager.getLogger(Runner.class);
 
     public static void main(String[] args) {
 
