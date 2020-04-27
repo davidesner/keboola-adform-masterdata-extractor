@@ -55,8 +55,8 @@ public class KBCParameters {
     private ArrayList<String> prefixes;
     @JsonProperty("metaFiles")
     private ArrayList<String> metaFiles;
-    @JsonProperty("default_pkey")
-    private boolean defaultPkey;
+    @JsonProperty("override_pkey")
+    private boolean overridePkey;
 
     public KBCParameters() {
         parametersMap = new HashMap<String, Object>();
@@ -70,7 +70,7 @@ public class KBCParameters {
             @JsonProperty("dateTo") String dateTo, @JsonProperty("bucket") String bucket, @JsonProperty("srcCharset") String srcCharset,
             @JsonProperty("prefixes") ArrayList<String> prefixes, @JsonProperty("metaFiles") ArrayList<String> metaFiles,
             @JsonProperty("hoursInterval") Integer hoursInterval, @JsonProperty("alwaysGetMeta") boolean alwaysGetMeta, 
-            @JsonProperty("default_pkey") boolean defaultPkey) throws ParseException {
+            @JsonProperty("override_pkey") boolean overridePkey) throws ParseException {
         parametersMap = new HashMap<String, Object>();
         this.user = user;
         this.pass = pass;
@@ -91,7 +91,7 @@ public class KBCParameters {
         this.bucket = bucket;
         this.prefixes = prefixes;
         this.metaFiles = metaFiles;
-        this.defaultPkey = defaultPkey;
+        this.overridePkey = overridePkey;
         //set param map
         parametersMap.put("user", user);
         parametersMap.put("pass", pass);
@@ -212,8 +212,8 @@ public class KBCParameters {
 		return alwaysGetMeta;
 	}
 
-	public boolean isDefaultPkey() {
-		return defaultPkey;
+	public boolean isOverridePkey() {
+		return overridePkey;
 	}
 	
 	
