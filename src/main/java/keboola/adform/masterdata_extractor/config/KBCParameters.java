@@ -55,6 +55,8 @@ public class KBCParameters {
     private ArrayList<String> prefixes;
     @JsonProperty("metaFiles")
     private ArrayList<String> metaFiles;
+    @JsonProperty("default_pkey")
+    private boolean defaultPkey;
 
     public KBCParameters() {
         parametersMap = new HashMap<String, Object>();
@@ -67,7 +69,8 @@ public class KBCParameters {
             @JsonProperty("mdListUrl") String mdListUrl, @JsonProperty("daysInterval") int daysInterval,
             @JsonProperty("dateTo") String dateTo, @JsonProperty("bucket") String bucket, @JsonProperty("srcCharset") String srcCharset,
             @JsonProperty("prefixes") ArrayList<String> prefixes, @JsonProperty("metaFiles") ArrayList<String> metaFiles,
-            @JsonProperty("hoursInterval") Integer hoursInterval, @JsonProperty("alwaysGetMeta") boolean alwaysGetMeta) throws ParseException {
+            @JsonProperty("hoursInterval") Integer hoursInterval, @JsonProperty("alwaysGetMeta") boolean alwaysGetMeta, 
+            @JsonProperty("default_pkey") boolean defaultPkey) throws ParseException {
         parametersMap = new HashMap<String, Object>();
         this.user = user;
         this.pass = pass;
@@ -88,6 +91,7 @@ public class KBCParameters {
         this.bucket = bucket;
         this.prefixes = prefixes;
         this.metaFiles = metaFiles;
+        this.defaultPkey = defaultPkey;
         //set param map
         parametersMap.put("user", user);
         parametersMap.put("pass", pass);
@@ -207,6 +211,11 @@ public class KBCParameters {
 	public boolean isAlwaysGetMeta() {
 		return alwaysGetMeta;
 	}
+
+	public boolean isDefaultPkey() {
+		return defaultPkey;
+	}
+	
 	
 	
 

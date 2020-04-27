@@ -147,7 +147,11 @@ public class Runner {
 
                 /*Build manifest file*/               
                 try {
-                	buildManifestFile(resFileName,  config.getParams().getBucket(), outTablesPath, headerCols, new String[] {MD_PRIMARY_KEY}, true);
+                	String[] pkey = null;
+                	if (config.getParams().isDefaultPkey()) {
+                		pkey = new String[] {MD_PRIMARY_KEY};
+                	}
+                	buildManifestFile(resFileName,  config.getParams().getBucket(), outTablesPath, headerCols, pkey, true);
                 } catch (Exception ex1) {
                     System.out.println("Error writing manifest file." + ex1.getMessage());
                     System.err.println(ex1.getMessage());
@@ -236,9 +240,13 @@ public class Runner {
        return true;
     }
     private static void buildManifestFile(String resFileName, String destination, String outPath, String [] cols, String [] pkey, boolean incremental) throws Exception {
-    	ManifestFile manFile = new ManifestFile.Builder(resFileName, destination + "." + resFileName)
+    	ManifestFile.Builder builder = new ManifestFile.Builder(resFileName, destination + "." + resFileName)
 				.setIncrementalLoad(incremental).setDelimiter(String.valueOf(DEFAULT_SEPARATOR)).setEnclosure(String.valueOf(DEFAULT_ENCLOSURE))
-				.setColumns(cols).setPrimaryKey(pkey).build();
+				.setColumns(cols);
+    	if (pkey != null) {
+    		builder.setPrimaryKey(pkey);
+    	}
+    	ManifestFile manFile = builder.build();
 		ManifestBuilder.buildManifestFile(manFile, outPath, resFileName + ".csv");	
     }
 
