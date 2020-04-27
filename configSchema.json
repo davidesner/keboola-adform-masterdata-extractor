@@ -13,7 +13,8 @@
 		"metaFiles",
 		"srcCharset",
 		"hoursInterval",
-		"alwaysGetMeta"
+		"alwaysGetMeta",
+		"override_pkey"
 	],
 	"properties": {
 		"user": {
@@ -77,6 +78,44 @@
 			"description": "List of required Masterdata datasets",
 			"uniqueItems": true,
 			"propertyOrder": 5000
+		},
+		"override_pkey": {
+			"type": "array",
+			"title": "Override primary keys",
+			"description": "Set custom primary keys.",
+			"propertyOrder": 5050,
+			"items": {
+				"format": "grid",
+				"type": "object",
+				"title": "List",
+				"required": [
+					"dataset",
+					"pkey"
+				],
+				"properties": {
+					"dataset": {
+						"type": "string",
+						"enum": [
+							"Click",
+							"Impression",
+							"Trackingpoint",
+							"Event"
+						],
+						"default": "CLick",
+						"title": "Load type",
+						"propertyOrder": 4000
+					},
+					"pkey": {
+						"type": "array",
+						"title": "Primary key",
+						"propertyOrder": 5000,
+						"items": {
+							"type": "string",
+							"title": "col name"
+						}
+					}
+				}
+			}
 		},
 		"metaFiles": {
 			"type": "array",
@@ -229,11 +268,11 @@
 			"propertyOrder": 4200
 		},
 		"alwaysGetMeta": {
-						"type": "boolean",
-						"title": "Always get meta files.",
-						"default": true,
-						"description": "If set to true, meta data will be always retrieved. If set to false, the specified `since` interval will be used, i.e. only recently updated metadata will be fetched.",
-						"propertyOrder": 6500
-					}
+			"type": "boolean",
+			"title": "Always get meta files.",
+			"default": true,
+			"description": "If set to true, meta data will be always retrieved. If set to false, the specified `since` interval will be used, i.e. only recently updated metadata will be fetched.",
+			"propertyOrder": 6500
+		}
 	}
 }

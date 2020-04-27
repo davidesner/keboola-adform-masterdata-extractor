@@ -13,6 +13,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -55,6 +56,11 @@ public class KBCParameters {
     private ArrayList<String> prefixes;
     @JsonProperty("metaFiles")
     private ArrayList<String> metaFiles;
+    @JsonProperty("override_pkey")
+    private List<DatasetPkey> overridePkey;
+    
+    @JsonIgnore
+    private Map<String, String[]> keyMap;
 
     public KBCParameters() {
         parametersMap = new HashMap<String, Object>();
@@ -67,7 +73,8 @@ public class KBCParameters {
             @JsonProperty("mdListUrl") String mdListUrl, @JsonProperty("daysInterval") int daysInterval,
             @JsonProperty("dateTo") String dateTo, @JsonProperty("bucket") String bucket, @JsonProperty("srcCharset") String srcCharset,
             @JsonProperty("prefixes") ArrayList<String> prefixes, @JsonProperty("metaFiles") ArrayList<String> metaFiles,
-            @JsonProperty("hoursInterval") Integer hoursInterval, @JsonProperty("alwaysGetMeta") boolean alwaysGetMeta) throws ParseException {
+            @JsonProperty("hoursInterval") Integer hoursInterval, @JsonProperty("alwaysGetMeta") boolean alwaysGetMeta, 
+            @JsonProperty("override_pkey") List<DatasetPkey> overridePkey) throws ParseException {
         parametersMap = new HashMap<String, Object>();
         this.user = user;
         this.pass = pass;
@@ -88,6 +95,24 @@ public class KBCParameters {
         this.bucket = bucket;
         this.prefixes = prefixes;
         this.metaFiles = metaFiles;
+        if (overridePkey == null) {
+        	List<DatasetPkey> pkeys = new ArrayList<>();
+        	pkeys.add(new DatasetPkey("Click", new String[] {"TransactionId"})); 
+        	pkeys.add(new DatasetPkey("Impression", new String[] {"TransactionId"}));
+        	pkeys.add(new DatasetPkey("Trackingpoint", new String[] {"TransactionId"}));
+        	pkeys.add(new DatasetPkey("Event", new String[] {"TransactionId"}));
+        	
+        	this.overridePkey = pkeys;
+        } else {
+        	this.overridePkey = overridePkey;
+        }
+        
+        //build key map
+        this.keyMap = new HashMap<>();
+        for (DatasetPkey k : this.overridePkey) {
+        	this.keyMap.put(k.getDataset(), k.getPkey());
+        }
+        
         //set param map
         parametersMap.put("user", user);
         parametersMap.put("pass", pass);
@@ -207,6 +232,17 @@ public class KBCParameters {
 	public boolean isAlwaysGetMeta() {
 		return alwaysGetMeta;
 	}
+
+	public List<DatasetPkey> getOverridePkey() {
+		return overridePkey;
+	}
+
+	public Map<String, String[]> getKeyMap() {
+		return keyMap;
+	}
+	
+	
+	
 	
 	
 
