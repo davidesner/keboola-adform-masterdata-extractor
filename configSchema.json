@@ -14,7 +14,7 @@
 		"srcCharset",
 		"hoursInterval",
 		"alwaysGetMeta",
-		"default_pkey"
+		"override_pkey"
 	],
 	"properties": {
 		"user": {
@@ -79,11 +79,11 @@
 			"uniqueItems": true,
 			"propertyOrder": 5000
 		},
-		"default_pkey": {
+		"override_pkey": {
 						"type": "boolean",
-						"title": "Use default 'transactionID' primary keys.",
-						"default": true,
-						"description": "If set to true, all datasets will be using transactionId field as primary key. Set to false to define the pkey manually in Storage.",
+						"title": "Define the primary keys manually in Storage.",
+						"default": false,
+						"description": "Set to true, to define the pkey manually in Storage. Otherwise all datasets will be using transactionId field as primary key.",
 						"propertyOrder": 5050
 					},
 		"metaFiles": {
