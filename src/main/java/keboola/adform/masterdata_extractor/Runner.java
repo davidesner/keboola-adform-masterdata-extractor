@@ -37,7 +37,7 @@ public class Runner {
 	private static char DEFAULT_ENCLOSURE = '"';
 	private static char DEFAULT_ESCAPE_CHAR = '\\';
 
-	private static final String MD_PRIMARY_KEY = "TransactionId";
+	private static final String MD_PRIMARY_KEY = "GUID";
 	final static Logger log = LogManager.getLogger(Runner.class);
 
     public static void main(String[] args) {
