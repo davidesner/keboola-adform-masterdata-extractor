@@ -97,10 +97,10 @@ public class KBCParameters {
         this.metaFiles = metaFiles;
         if (overridePkey == null) {
         	List<DatasetPkey> pkeys = new ArrayList<>();
-        	pkeys.add(new DatasetPkey("Click", new String[] {"TransactionId"})); 
-        	pkeys.add(new DatasetPkey("Impression", new String[] {"TransactionId"}));
-        	pkeys.add(new DatasetPkey("Trackingpoint", new String[] {"TransactionId"}));
-        	pkeys.add(new DatasetPkey("Event", new String[] {"TransactionId"}));
+        	pkeys.add(new DatasetPkey("Click", new String[] {"GUID"})); 
+        	pkeys.add(new DatasetPkey("Impression", new String[] {"GUID"}));
+        	pkeys.add(new DatasetPkey("Trackingpoint", new String[] {"GUID"}));
+        	pkeys.add(new DatasetPkey("Event", new String[] {"GUID"}));
         	
         	this.overridePkey = pkeys;
         } else {
