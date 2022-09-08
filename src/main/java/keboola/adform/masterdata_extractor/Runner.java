@@ -242,15 +242,18 @@ public class Runner {
         }
        return true;
     }
-    private static void buildManifestFile(String resFileName, String destination, String outPath, String [] cols, String [] pkey, boolean incremental) throws Exception {
-    	ManifestFile.Builder builder = new ManifestFile.Builder(resFileName, destination + "." + resFileName)
-				.setIncrementalLoad(incremental).setDelimiter(String.valueOf(DEFAULT_SEPARATOR)).setEnclosure(String.valueOf(DEFAULT_ENCLOSURE))
-				.setColumns(cols);
-    	if (pkey != null) {
-    		builder.setPrimaryKey(pkey);
-    	}
-    	ManifestFile manFile = builder.build();
-		ManifestBuilder.buildManifestFile(manFile, outPath, resFileName + ".csv");	
+
+    private static void buildManifestFile(String resFileName, String destination, String outPath, String[] cols, String[] pkey, boolean incremental) throws Exception {
+        // remove BOM because some files contain it and KBC is incapable of handling it
+        cols[0] = CsvUtils.removeUTF8BOM(cols[0]);
+        ManifestFile.Builder builder = new ManifestFile.Builder(resFileName, destination + "." + resFileName)
+                .setIncrementalLoad(incremental).setDelimiter(String.valueOf(DEFAULT_SEPARATOR)).setEnclosure(String.valueOf(DEFAULT_ENCLOSURE))
+                .setColumns(cols);
+        if (pkey != null) {
+            builder.setPrimaryKey(pkey);
+        }
+        ManifestFile manFile = builder.build();
+        ManifestBuilder.buildManifestFile(manFile, outPath, resFileName + ".csv");
     }
 
 	private static String[] prepareSlicedTables(List<MasterFile> downloadedFiles, String charset) throws Exception {
