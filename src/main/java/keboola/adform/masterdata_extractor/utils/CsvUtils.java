@@ -22,118 +22,120 @@ import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
 /**
- *
  * @author David Esner <esnerda at gmail.com>
  * @created 2016
  */
 public class CsvUtils {
-	/**
-	 * Removes first line from the specified file. Using NIO - fast.
-	 * 
-	 * @param csvFile
-	 * @throws IOException
-	 */
-	public static void removeHeaderFromCsv(File csvFile, Charset charset) throws Exception {
-		File outFile = new File(csvFile.getParent() + File.separator + "tempRes");
-		try (
-				InputStreamReader fr = new InputStreamReader( new FileInputStream(csvFile),charset);				
-				BufferedReader br = new BufferedReader(fr);
-				FileWriter fileStream = new FileWriter(outFile);
-				BufferedWriter out = new BufferedWriter(fileStream);
-			) {
-			String line;
-			br.readLine();
-			while ((line = br.readLine()) != null) {
-				out.write(line);
-				out.newLine();
-			}
-			out.close();
-			fileStream.close();
-		}
 
-		csvFile.delete();
-		outFile.renameTo(csvFile);
-	}
+    public static final String UTF8_BOM = "\uFEFF";
 
-	private static final boolean isNL(int character) {
-		if ((character == -1)) {
-			return false;
-		}
-		return ((((char) character == '\n') || ((char) character == '\r')));
-	}
+    /**
+     * Removes first line from the specified file. Using NIO - fast.
+     *
+     * @param csvFile
+     * @throws IOException
+     */
+    public static void removeHeaderFromCsv(File csvFile, Charset charset) throws Exception {
+        File outFile = new File(csvFile.getParent() + File.separator + "tempRes");
+        try (
+                InputStreamReader fr = new InputStreamReader(new FileInputStream(csvFile), charset);
+                BufferedReader br = new BufferedReader(fr);
+                FileWriter fileStream = new FileWriter(outFile);
+                BufferedWriter out = new BufferedWriter(fileStream);
+        ) {
+            String line;
+            br.readLine();
+            while ((line = br.readLine()) != null) {
+                out.write(line);
+                out.newLine();
+            }
+            out.close();
+            fileStream.close();
+        }
 
-	public static void deleteEmptyFiles(List<File> files) {
-		for (File f : files) {
-			try {
-				if (isFileEmpty(f)) {
-					f.delete();
-				}
-			} catch (IOException e) {
-				// do nothing, I really dont care here
-			}
-		}
-	}
+        csvFile.delete();
+        outFile.renameTo(csvFile);
+    }
 
-	public static boolean isFileEmpty(File f) throws IOException {
-		BufferedReader br = null;
-		try {
-			br = new BufferedReader(new FileReader(f));
-			String line = br.readLine();
-			return StringUtils.isBlank(line);
-		} finally {
-			if (br != null)
-				br.close();
-		}
-	}
+    private static final boolean isNL(int character) {
+        if ((character == -1)) {
+            return false;
+        }
+        return ((((char) character == '\n') || ((char) character == '\r')));
+    }
 
-	private static char[] readLineWithNL(FileInputStream in) throws IOException {
-		try {
-			int hLen = 0;
+    public static void deleteEmptyFiles(List<File> files) {
+        for (File f : files) {
+            try {
+                if (isFileEmpty(f)) {
+                    f.delete();
+                }
+            } catch (IOException e) {
+                // do nothing, I really dont care here
+            }
+        }
+    }
 
-			ArrayList<Character> chars = new ArrayList();
-			int ch = in.read();
-			chars.add((char) ch);
-			while (!isNL(ch)) {
-				ch = in.read();
-				chars.add((char) ch);
-			}
-			boolean isNl = true;
-			while (isNl) {
-				ch = in.read();
-				if (isNL(ch)) {
-					chars.add((char) ch);
-					isNl = true;
-				} else {
-					isNl = false;
-				}
-				hLen++;
-			}
-			char[] charArray = new char[chars.size()];
-			for (int i = 0; i < chars.size(); i++) {
-				charArray[i] = chars.get(i);
-			}
-			return charArray;
-		} catch (IOException ex) {
-			throw ex;
-		}
-	}
+    public static boolean isFileEmpty(File f) throws IOException {
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new FileReader(f));
+            String line = br.readLine();
+            return StringUtils.isBlank(line);
+        } finally {
+            if (br != null)
+                br.close();
+        }
+    }
 
-	public static String[] readHeader(File csvFile, char separator, char quotechar, char escape, boolean strictQuotes,
-			boolean ignoreLeadingWhiteSpace, Charset charset) throws Exception {
-		String[] headers = null;
-		
-		try (InputStreamReader freader = new InputStreamReader( new FileInputStream(csvFile),charset);
-				CSVReader csvreader = new CSVReader(freader, separator, quotechar, escape, 0, strictQuotes,
-						ignoreLeadingWhiteSpace);) {
+    private static char[] readLineWithNL(FileInputStream in) throws IOException {
+        try {
+            int hLen = 0;
 
-			headers = csvreader.readNext();
-			if (headers == null) {
-				throw new Exception("Error reading csv file header: " + csvFile.getName());
-			}
-			freader.close();
-		}
-		return headers;
-	}
+            ArrayList<Character> chars = new ArrayList();
+            int ch = in.read();
+            chars.add((char) ch);
+            while (!isNL(ch)) {
+                ch = in.read();
+                chars.add((char) ch);
+            }
+            boolean isNl = true;
+            while (isNl) {
+                ch = in.read();
+                if (isNL(ch)) {
+                    chars.add((char) ch);
+                    isNl = true;
+                } else {
+                    isNl = false;
+                }
+                hLen++;
+            }
+            char[] charArray = new char[chars.size()];
+            for (int i = 0; i < chars.size(); i++) {
+                charArray[i] = chars.get(i);
+            }
+            return charArray;
+        } catch (IOException ex) {
+            throw ex;
+        }
+    }
+
+    public static String[] readHeader(File csvFile, char separator, char quotechar, char escape, boolean strictQuotes,
+                                      boolean ignoreLeadingWhiteSpace, Charset charset) throws Exception {
+        String[] headers = null;
+
+        try (InputStreamReader freader = new InputStreamReader(new FileInputStream(csvFile), charset);
+             CSVReader csvreader = new CSVReader(freader, separator, quotechar, escape, 0, strictQuotes,
+                     ignoreLeadingWhiteSpace);) {
+
+            headers = csvreader.readNext();
+            if (headers == null) {
+                throw new Exception("Error reading csv file header: " + csvFile.getName());
+            }
+            freader.close();
+        }
+        return headers;
+    }
 
     /**
      * Validates the structure of the merged csv files.
@@ -144,9 +146,9 @@ public class CsvUtils {
      * @throws Exception
      */
     public static boolean dataStructureMatch(Collection<String> fileNames, String folderPath) throws Exception {
-    	if (fileNames == null || fileNames.isEmpty()) {
-    		return true;
-    	}
+        if (fileNames == null || fileNames.isEmpty()) {
+            return true;
+        }
         String[] headers = null;
         String headerLine = "";
         String currFile = "";
@@ -194,5 +196,12 @@ public class CsvUtils {
         } catch (IOException ex) {
             throw new Exception("Error reading csv file: " + currFile + " " + ex.getMessage());
         }
+    }
+
+    public static String removeUTF8BOM(String s) {
+        if (s.startsWith(UTF8_BOM)) {
+            s = s.substring(1);
+        }
+        return s;
     }
 }
