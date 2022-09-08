@@ -45,18 +45,18 @@ public class Extractor {
     		 return Collections.emptyList();
     	 }
     	//download files
-    	downloadFiles(fileList, folderPath);
+    	downloadFiles(fileList, "/data/out/files");
 
-        List<String> rawFilePaths;
-        //unzip archives and delete data
-        List<MasterFile> exFiles = unzip(fileList, folderPath);
-        //delete zipFiles
-        try {
-            FileHandler.deleteFile(folderPath + File.separator + fileList.get(0).getPrefix());
-        } catch (IOException ex) {
-            logger.error(ex.getMessage(), ex);
-        }
-        return exFiles;
+//        List<String> rawFilePaths;
+//        //unzip archives and delete data
+//        List<MasterFile> exFiles = unzip(fileList, folderPath);
+//        //delete zipFiles
+//        try {
+//            FileHandler.deleteFile(folderPath + File.separator + fileList.get(0).getPrefix());
+//        } catch (IOException ex) {
+//            logger.error(ex.getMessage(), ex);
+//        }
+        return null;
 
     }
 

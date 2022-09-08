@@ -123,17 +123,17 @@ public class Runner {
                 String resFileFolder = outTablesPath + File.separator + prefix.toLowerCase() + ".csv";
                 List<MasterFile> downloadedFiles = ex.downloadAndUnzip(filesSince, resFileFolder);
 
-                /*This should not happen, check anyway*/
-                if (downloadedFiles.isEmpty()) {
-                    System.out.print("Error downloading files with prefix: " + prefix);
-                    System.err.print("Error downloading files with prefix: " + prefix);
-                    System.exit(1);
-                }
-
-                //merge downloaded files
-                String resFileName = prefix.toLowerCase();
-                System.out.println("Preparing sliced tables...");
-                String[] headerCols = null;
+//                /*This should not happen, check anyway*/
+//                if (downloadedFiles.isEmpty()) {
+//                    System.out.print("Error downloading files with prefix: " + prefix);
+//                    System.err.print("Error downloading files with prefix: " + prefix);
+//                    System.exit(1);
+//                }
+//
+//                //merge downloaded files
+//                String resFileName = prefix.toLowerCase();
+//                System.out.println("Preparing sliced tables...");
+//                String[] headerCols = null;
 //				try {
 //					headerCols = prepareSlicedTables(downloadedFiles, config.getParams().getSrcCharset());
 //				} catch (Exception e) {
