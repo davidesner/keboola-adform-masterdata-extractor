@@ -240,8 +240,12 @@ public class Runner {
 
     private static void buildManifestFile(String resFileName, String destination, String outPath, String[] cols, String[] pkey, boolean incremental) throws Exception {
         // remove BOM because some files contain it and KBC is incapable of handling it
+        if (cols != null) {
+            System.out.println(cols[0]);
+            cols[0] = CsvUtils.removeUTF8BOM(cols[0]);
+        }
+
         System.out.println(Arrays.toString(cols));
-        cols[0] = CsvUtils.removeUTF8BOM(cols[0]);
         ManifestFile.Builder builder = new ManifestFile.Builder(resFileName, destination + "." + resFileName)
                 .setIncrementalLoad(incremental).setDelimiter(String.valueOf(DEFAULT_SEPARATOR)).setEnclosure(String.valueOf(DEFAULT_ENCLOSURE))
                 .setColumns(cols);
