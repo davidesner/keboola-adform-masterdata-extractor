@@ -5,12 +5,7 @@ package keboola.adform.masterdata_extractor;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -73,7 +68,7 @@ public class Runner {
             System.exit(1);
         }
         boolean dataExtracted = false;
-        Extractor ex = new Extractor(config.getParams().getUser(), config.getParams().getPass(), config.getParams().getMdListId(), log);      
+        Extractor ex = new Extractor(config.getParams().getUser(), config.getParams().getPass(), config.getParams().getMdListId(), log);
         try {
             //authenticate, get session token
             ex.client.authenticate();
@@ -146,7 +141,7 @@ public class Runner {
 					System.exit(2);
 				}
 
-                /*Build manifest file*/               
+                /*Build manifest file*/
                 try {
                 	String[] pkey = null;
                 	if (!config.getParams().getKeyMap().containsKey(prefix)) {
@@ -159,14 +154,14 @@ public class Runner {
                     System.out.println("Error writing manifest file." + ex1.getMessage());
                     System.err.println(ex1.getMessage());
                     System.exit(2);
-                }               
+                }
                 i++;
                 dataExtracted = true;
             }
 
-            
+
             if (config.hasMeta()) {
-                System.out.println("Downloading meta files");          
+                System.out.println("Downloading meta files");
                 List<MasterFile> filesSince = null;
 				if (config.getParams().isAlwaysGetMeta()) {
 					filesSince = fileList.getFilesByPrefix("meta");
@@ -175,12 +170,12 @@ public class Runner {
 				} else {
 					filesSince = fileList.getFilesSince(startInterval, "meta");
 				}
-                
+
 
                 List<MasterFile> metaFiles = ex.downloadAndUnzip(filesSince, dataPath);
-                
+
                 dataExtracted = processMetaDataFiles(metaFiles, config, dataPath, outTablesPath);
-                
+
             }
 
             if (dataExtracted && i > 0) {
@@ -202,7 +197,7 @@ public class Runner {
     	if (metaFiles.isEmpty()) {
         	log.warn("No new metadata were retrieved!");
     		return false;
-    	}        
+    	}
         /*Convert from JSON to csv*/
         JsonToCsvConvertor conv = new JsonToCsvConvertor();
         for (String metaF : config.getParams().getMetaFiles()) {
@@ -245,6 +240,7 @@ public class Runner {
 
     private static void buildManifestFile(String resFileName, String destination, String outPath, String[] cols, String[] pkey, boolean incremental) throws Exception {
         // remove BOM because some files contain it and KBC is incapable of handling it
+        System.out.println(Arrays.toString(cols));
         cols[0] = CsvUtils.removeUTF8BOM(cols[0]);
         ManifestFile.Builder builder = new ManifestFile.Builder(resFileName, destination + "." + resFileName)
                 .setIncrementalLoad(incremental).setDelimiter(String.valueOf(DEFAULT_SEPARATOR)).setEnclosure(String.valueOf(DEFAULT_ENCLOSURE))
@@ -261,32 +257,32 @@ public class Runner {
 		for(MasterFile mf : downloadedFiles) {
 			files.add(new File(mf.getLocalAbsolutePath()));
 		}
-		
+
 		// get colums
 				String[] headerCols = CsvUtils.readHeader(files.get(0),
 						DEFAULT_SEPARATOR, DEFAULT_ENCLOSURE, DEFAULT_ESCAPE_CHAR, false, false, Charset.forName(charset));
 				// remove headers and create results
 				for (File mFile : files) {
-					CsvUtils.removeHeaderFromCsv(mFile, Charset.forName(charset));					
+					CsvUtils.removeHeaderFromCsv(mFile, Charset.forName(charset));
 				}
 				//in case some files did not contain any data
-				CsvUtils.deleteEmptyFiles(files);				
+				CsvUtils.deleteEmptyFiles(files);
 				return headerCols;
-		
+
 	}
 
 	private static void printEnvStats() {
 		// Get current size of heap in bytes
-		long heapSize = Runtime.getRuntime().totalMemory(); 
+		long heapSize = Runtime.getRuntime().totalMemory();
 
 		// Get maximum size of heap in bytes. The heap cannot grow beyond this size.// Any attempt will result in an OutOfMemoryException.
 		long heapMaxSize = Runtime.getRuntime().maxMemory();
 
 		 // Get amount of free memory within the heap in bytes. This size will increase // after garbage collection and decrease as new objects are created.
 		long heapFreeSize = Runtime.getRuntime().freeMemory();
-		
+
 		log.info("Initial Heap size (MB): " + heapSize/1000000);
 		log.info("Max Heap size (MB): " + heapMaxSize/1000000);
-		log.info("Initial free memory (MB): " + heapFreeSize/1000000);		
+		log.info("Initial free memory (MB): " + heapFreeSize/1000000);
 	}
 }
