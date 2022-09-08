@@ -134,58 +134,58 @@ public class Runner {
                 String resFileName = prefix.toLowerCase();
                 System.out.println("Preparing sliced tables...");
                 String[] headerCols = null;
-				try {
-					headerCols = prepareSlicedTables(downloadedFiles, config.getParams().getSrcCharset());
-				} catch (Exception e) {
-					System.err.println("Error processing files." + e.getMessage());
-					System.exit(2);
-				}
+//				try {
+//					headerCols = prepareSlicedTables(downloadedFiles, config.getParams().getSrcCharset());
+//				} catch (Exception e) {
+//					System.err.println("Error processing files." + e.getMessage());
+//					System.exit(2);
+//				}
+//
+//                /*Build manifest file*/
+//                try {
+//                	String[] pkey = null;
+//                	if (!config.getParams().getKeyMap().containsKey(prefix)) {
+//                		pkey = new String[] {MD_PRIMARY_KEY};
+//                	} else {
+//                		pkey = config.getParams().getKeyMap().get(prefix);
+//                	}
+//                	buildManifestFile(resFileName,  config.getParams().getBucket(), outTablesPath, headerCols, pkey, true);
+//                } catch (Exception ex1) {
+//                    System.out.println("Error writing manifest file." + ex1.getMessage());
+//                    System.err.println(ex1.getMessage());
+//                    System.exit(2);
+//                }
+//                i++;
+//                dataExtracted = true;
+//            }
+//
+//
+//            if (config.hasMeta()) {
+//                System.out.println("Downloading meta files");
+//                List<MasterFile> filesSince = null;
+//				if (config.getParams().isAlwaysGetMeta()) {
+//					filesSince = fileList.getFilesByPrefix("meta");
+//				} else if (config.getParams().getDate_to() != null) {
+//					filesSince = fileList.getFilesSince(startInterval, config.getParams().getDate_to(), "meta");
+//				} else {
+//					filesSince = fileList.getFilesSince(startInterval, "meta");
+//				}
+//
+//
+//                List<MasterFile> metaFiles = ex.downloadAndUnzip(filesSince, dataPath);
+//
+//                dataExtracted = processMetaDataFiles(metaFiles, config, dataPath, outTablesPath);
 
-                /*Build manifest file*/
-                try {
-                	String[] pkey = null;
-                	if (!config.getParams().getKeyMap().containsKey(prefix)) {
-                		pkey = new String[] {MD_PRIMARY_KEY};
-                	} else {
-                		pkey = config.getParams().getKeyMap().get(prefix);
-                	}
-                	buildManifestFile(resFileName,  config.getParams().getBucket(), outTablesPath, headerCols, pkey, true);
-                } catch (Exception ex1) {
-                    System.out.println("Error writing manifest file." + ex1.getMessage());
-                    System.err.println(ex1.getMessage());
-                    System.exit(2);
-                }
-                i++;
-                dataExtracted = true;
             }
 
-
-            if (config.hasMeta()) {
-                System.out.println("Downloading meta files");
-                List<MasterFile> filesSince = null;
-				if (config.getParams().isAlwaysGetMeta()) {
-					filesSince = fileList.getFilesByPrefix("meta");
-				} else if (config.getParams().getDate_to() != null) {
-					filesSince = fileList.getFilesSince(startInterval, config.getParams().getDate_to(), "meta");
-				} else {
-					filesSince = fileList.getFilesSince(startInterval, "meta");
-				}
-
-
-                List<MasterFile> metaFiles = ex.downloadAndUnzip(filesSince, dataPath);
-
-                dataExtracted = processMetaDataFiles(metaFiles, config, dataPath, outTablesPath);
-
-            }
-
-            if (dataExtracted && i > 0) {
-                System.out.println("Files extracted successfully..");
-            } else if (!dataExtracted) {
-                System.out.println("Proccess finished successfully but no meta files were extracted. Check configuration parameters.");
-            } else {
-                System.out.println("Proccess finished successfully but only metadata tables were extracted. Check configuration parameters.");
-            }
-            System.exit(0);
+//            if (dataExtracted && i > 0) {
+//                System.out.println("Files extracted successfully..");
+//            } else if (!dataExtracted) {
+//                System.out.println("Proccess finished successfully but no meta files were extracted. Check configuration parameters.");
+//            } else {
+//                System.out.println("Proccess finished successfully but only metadata tables were extracted. Check configuration parameters.");
+//            }
+//            System.exit(0);
         } catch (ExtractorException ex1) {
             System.out.print("Error extracting data.");
             System.err.print(ex1.getMessage());
